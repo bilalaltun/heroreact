@@ -12,8 +12,8 @@ const Login = () => {
   const description = 'Hero HRM Kullancı Giriş Sayfası';
 
   const validationSchema = Yup.object().shape({
-    email: Yup.string().email().required('Email is required'),
-    password: Yup.string().min(6, 'Must be at least 6 chars!').required('Password is required'),
+    email: Yup.string().email().required('Email zorunlu'),
+    password: Yup.string().min(1, 'Minimum 4 karakter olmalı').required('Parola Girmek Zorunludur'),
   });
   const initialValues = { email: '', password: '' };
   const onSubmit = (values) => console.log('submit form', values);
@@ -23,7 +23,9 @@ const Login = () => {
 
   const leftSide = (
     <div className="min-h-100 d-flex align-items-center">
-      <div className="w-100 w-lg-400 w-xxl-95"> {/* Genişliği artırdık */}
+      <div className="w-100 w-lg-400 w-xxl-95">
+        {' '}
+        {/* Genişliği artırdık */}
         <div>
           <div className="mb-5">
             <h1 className="display-3 text-white">Hero HRM</h1>
@@ -38,7 +40,6 @@ const Login = () => {
       </div>
     </div>
   );
-  
 
   const rightSide = (
     <div className="sw-lg-70 min-h-100 bg-foreground d-flex justify-content-center align-items-center shadow-deep py-5 full-page-content-right-border">

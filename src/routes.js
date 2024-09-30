@@ -17,6 +17,11 @@ const apps = {
   mailbox: lazy(() => import('views/apps/mailbox/Mailbox')),
   tasks: lazy(() => import('views/apps/tasks/Tasks')),
 };
+const masraf = {
+  index: lazy(() => import('views/masraf/Masraf')),
+  masrafekle: lazy(() => import('views/masraf/MasrafEkle')),
+  masraflistele: lazy(() => import('views/masraf/MasrafListele')),
+};
 const pages = {
   index: lazy(() => import('views/pages/Pages')),
   authentication: {
@@ -170,15 +175,10 @@ const routesAndMenuItems = {
       to: `${appRoot}/login`,
     },
     {
-      path: `${appRoot}/dashboards`,
-      component: dashboards.index,
+      path: `${appRoot}/dashboards/analytic`,
+      component: dashboards.analytic,
       label: 'menu.dashboards',
       icon: 'home',
-       subs: [
-        { path: '/default', label: 'menu.default', component: dashboards.default },
-        { path: '/visual', label: 'menu.visual', component: dashboards.visual },
-        { path: '/analytic', label: 'menu.analytic', component: dashboards.analytic },
-      ],
     },
     {
       path: `${appRoot}/apps`,
@@ -191,6 +191,16 @@ const routesAndMenuItems = {
         { path: '/contacts', label: 'menu.contacts', component: apps.contacts },
         { path: '/mailbox', label: 'menu.mailbox', component: apps.mailbox },
         { path: '/tasks', label: 'menu.tasks', component: apps.tasks },
+      ],
+    },
+    {
+      path: `${appRoot}/masraf`,
+      label: 'Masraflar',
+      icon: 'screen',
+      component: masraf.index,
+      subs: [
+        { path: '/masrafekle', label: 'Masraf Ekle', component: masraf.masrafekle },
+        { path: '/masraflistele', label: 'Masraf Listele', component: masraf.masraflistele },
       ],
     },
     {
