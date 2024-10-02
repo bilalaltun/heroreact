@@ -15,15 +15,16 @@ const NavLanguageSwitcher = () => {
     attrMobile,
     attrMenuAnimate,
   } = useSelector((state) => state.menu);
-  
+
   const { color } = useSelector((state) => state.settings);
   const { showingNavMenu } = useSelector((state) => state.layout);
-  const { languages, currentLang } = useSelector((state) => state.lang);
+  const { languages, currentLang } = useSelector((state) => {
+    console.log(state.lang)
+    return state.lang
+  });
   const defaultLang = useSelector((state) => state.lang.currentLang);
 
   // Dilleri ve güncel dili kontrol edelim
-  console.log('Languages:', languages);
-  console.log('Current Language:', currentLang);
 
   // Tarayıcı diliyle varsayılan dilin eşleştiğinden emin olalım
   useEffect(() => {
@@ -43,7 +44,7 @@ const NavLanguageSwitcher = () => {
     if (event && event.stopPropagation) event.stopPropagation();
     else if (event && event.originalEvent && event.originalEvent.stopPropagation)
       event.originalEvent.stopPropagation();
-    
+
     dispatch(layoutShowingNavMenu(status ? MENU_NAME : ''));
   };
 

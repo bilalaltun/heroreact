@@ -5,7 +5,7 @@ import { DEFAULT_PATHS } from 'config.js';
 const NavLogo = () => {
   return (
     <div className="logo position-relative">
-      <Link to={DEFAULT_PATHS.APP}>
+      <Link to="/dashboards/analytic">
         {/*
           Logo can be added directly
           <img src="/img/logo/logo-white.svg" alt="logo" />

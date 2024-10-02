@@ -99,13 +99,13 @@ const ModalAddEdit = ({ show = false, onHide = () => {} }) => {
     <>
       <Modal className="modal-right fade" show={show} onHide={onHide}>
         <Modal.Header>
-          <Modal.Title>{selectedEvent.id !== 0 ? 'Edit Event' : 'Add Event'}</Modal.Title>
+          <Modal.Title>{selectedEvent.id !== 0 ? 'Edit Event' : 'Masraf Ekle'}</Modal.Title>
         </Modal.Header>
         <Modal.Body className="d-flex flex-column">
           <Form>
             <div className="mb-3 top-label">
               <Form.Control type="text" defaultValue={selectedItem ? selectedItem.title : ''} onChange={changeTitle} />
-              <Form.Label>TITLE</Form.Label>
+              <Form.Label>BAŞLIK</Form.Label>
             </div>
             <div className="mb-3 top-label">
               <Select
@@ -116,13 +116,13 @@ const ModalAddEdit = ({ show = false, onHide = () => {} }) => {
                 onChange={changeCategory}
                 placeholder=""
               />
-              <span>CATEGORY</span>
+              <span>KATEGORİ</span>
             </div>
             <Row className="g-0">
               <Col className="pe-2">
                 <div className="mb-3 top-label">
                   <DatePicker className="form-control" selected={selectedItem.startDate} onChange={(date) => changeStartDate(date)} showFullMonthYearPicker />
-                  <span>START DATE</span>
+                  <span>BAŞLANGIÇ TARİHİ</span>
                 </div>
               </Col>
               <div className="col-auto">
@@ -134,7 +134,7 @@ const ModalAddEdit = ({ show = false, onHide = () => {} }) => {
                     onChange={changeStartTime}
                     placeholder=""
                   />
-                  <span>TIME</span>
+                  <span>SAAT</span>
                 </div>
               </div>
             </Row>
@@ -142,7 +142,7 @@ const ModalAddEdit = ({ show = false, onHide = () => {} }) => {
               <Col className="pe-2">
                 <div className="mb-3 top-label">
                   <DatePicker className="form-control" selected={selectedItem.endDate} onChange={(date) => changeEndDate(date)} />
-                  <span>END DATE</span>
+                  <span>BİTİŞ TARİHİ</span>
                 </div>
               </Col>
               <Col xs="auto">
@@ -154,7 +154,7 @@ const ModalAddEdit = ({ show = false, onHide = () => {} }) => {
                     onChange={changeEndTime}
                     placeholder=""
                   />
-                  <span>TIME</span>
+                  <span>SAAT</span>
                 </div>
               </Col>
             </Row>
@@ -170,12 +170,12 @@ const ModalAddEdit = ({ show = false, onHide = () => {} }) => {
               </OverlayTrigger>
 
               <Button className="btn-icon btn-icon-end" onClick={saveItem}>
-                <span>Save</span> <CsLineIcons icon="check" />
+                <span>KAYDET</span> <CsLineIcons icon="check" />
               </Button>
             </>
           ) : (
             <Button className="btn-icon btn-icon-start" onClick={saveItem}>
-              <CsLineIcons icon="plus" /> <span>Add</span>
+              <CsLineIcons icon="plus" /> <span>EKLE</span>
             </Button>
           )}
         </Modal.Footer>
@@ -183,17 +183,17 @@ const ModalAddEdit = ({ show = false, onHide = () => {} }) => {
 
       <Modal className="fade modal-close-out" show={isShowDeleteConfirmModal}>
         <Modal.Header>
-          <Modal.Title> Are you sure?</Modal.Title>
+          <Modal.Title> EMİN MİSİN??</Modal.Title>
         </Modal.Header>
         <Modal.Body className="d-flex flex-column">
           <p>
-            <span className="fw-bold">{selectedItem.title}</span> <span>will be deleted. Are you sure?</span>
+            <span className="fw-bold">{selectedItem.title}</span> <span>SİLME İŞLEMİNİ ONAYLIYOR MUSUNUZ?</span>
           </p>
         </Modal.Body>
         <Modal.Footer>
-          <Button onClick={() => setIsShowDeleteConfirmModal(false)}>No</Button>
+          <Button onClick={() => setIsShowDeleteConfirmModal(false)}>HAYIR</Button>
           <Button variant="outline-primary" onClick={deleteItemApprove}>
-            Yes
+            EVET
           </Button>
         </Modal.Footer>
       </Modal>

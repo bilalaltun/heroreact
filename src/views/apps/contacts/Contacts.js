@@ -16,18 +16,18 @@ import MobileSortDropdown from './components/MobileSortDropdown';
 import DeleteConfirmModal from './components/DeleteConfirmModal';
 
 const ContactsApp = () => {
-  const title = 'Contacts';
-  const description = 'User directory application that built with the help of List.js. Can be searched, paged and sorted.';
+  const title = 'Kullanicilar';
+  const description = 'Sistem içerisindeki aktif kullanıcılar listesi.';
 
   const breadcrumbs = [
-    { to: '', text: 'Home' },
-    { to: 'apps', title: 'Apps' },
+    { to: '', text: 'Anasayfa' },
+    { to: 'apps', title: 'Uygulamalar' },
   ];
 
   const columns = React.useMemo(() => {
     return [
       {
-        Header: 'Name',
+        Header: 'Isim',
         accessor: 'name',
         sortable: true,
         headerClassName: 'ol-3 col-lg-4 d-flex flex-column mb-lg-0 pe-3 d-flex',
@@ -52,13 +52,13 @@ const ContactsApp = () => {
         headerClassName: 'col-3 col-lg-3 d-flex flex-column pe-1 justify-content-center',
       },
       {
-        Header: 'Phone',
+        Header: 'Telefon',
         accessor: 'phone',
         sortable: true,
         headerClassName: 'col-3 col-lg-3 d-flex flex-column pe-1 justify-content-center',
       },
       {
-        Header: 'Group',
+        Header: 'Tanım',
         accessor: 'group',
         sortable: true,
         headerClassName: 'col-3 col-lg-1 d-flex flex-column pe-1 justify-content-center',

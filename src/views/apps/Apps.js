@@ -6,11 +6,11 @@ import BreadcrumbList from 'components/breadcrumb-list/BreadcrumbList';
 import CsLineIcons from 'cs-line-icons/CsLineIcons';
 
 const AppsPage = () => {
-  const title = 'Apps';
+  const title = 'Uygulamalar';
   const description =
-    'Frontend implementations of different applications that might be useful to build on top of them or create totally different functionality with the provided layouts.';
+    'Masraf Uygulamalarına aşağıdan erişebilirsiniz.';
 
-  const breadcrumbs = [{ to: '', text: 'Home' }];
+  const breadcrumbs = [{ to: '', text: 'Anasayfa' }];
 
   return (
     <>
@@ -40,24 +40,9 @@ const AppsPage = () => {
               </Col>
               <Col>
                 <NavLink to="/apps/calendar" className="heading stretched-link d-block">
-                  Calendar
+                  Takvim
                 </NavLink>
-                <div className="text-muted">Implementation for a basic events and schedule application that built on top of Full Calendar plugin.</div>
-              </Col>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col>
-          <Card className="h-100">
-            <Card.Body className="row gx-4">
-              <Col xs="auto">
-                <CsLineIcons icon="message" className="text-primary" />
-              </Col>
-              <Col>
-                <NavLink to="/apps/chat" className="heading stretched-link d-block">
-                  Chat
-                </NavLink>
-                <div className="text-muted">A basic chat application that built mobile first and has chat and talk screens and contains a contact list.</div>
+                <div className="text-muted">Ödeme planlamalarınızı yönetin.</div>
               </Col>
             </Card.Body>
           </Card>
@@ -70,39 +55,9 @@ const AppsPage = () => {
               </Col>
               <Col>
                 <NavLink to="/apps/contacts" className="heading stretched-link d-block">
-                  Contacts
+                  Kullanıcılar
                 </NavLink>
-                <div className="text-muted">User directory application that built with the help of List.js. Can be searched, paged and sorted.</div>
-              </Col>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col>
-          <Card className="h-100">
-            <Card.Body className="row gx-4">
-              <Col xs="auto">
-                <CsLineIcons icon="email" className="text-primary" />
-              </Col>
-              <Col>
-                <NavLink to="/apps/mailbox" className="heading stretched-link d-block">
-                  Mailbox
-                </NavLink>
-                <div className="text-muted">Very basic email application that contains a list page rendering, new&reply layouts and a static details page.</div>
-              </Col>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col>
-          <Card className="h-100">
-            <Card.Body className="row gx-4">
-              <Col xs="auto">
-                <CsLineIcons icon="check-square" className="text-primary" />
-              </Col>
-              <Col>
-                <NavLink to="/apps/tasks" className="heading stretched-link d-block">
-                  Tasks
-                </NavLink>
-                <div className="text-muted">Tasks application that has create, edit and delete capabilities. Also has a Fuse.js search implementation.</div>
+                <div className="text-muted">HeroHRM kullanıcılarını yönetin</div>
               </Col>
             </Card.Body>
           </Card>

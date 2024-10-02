@@ -77,25 +77,30 @@ const ChartCustomHorizontalTooltip = () => {
 
   const data = React.useMemo(() => {
     return {
-      labels: ['January', 'February', 'March', 'April'],
+      labels: ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'],
       datasets: [
         {
-          label: 'Burger',
-          icon: 'burger',
+          label: 'Onaylanan',
+          icon: 'check-circle',
           borderColor: themeValues.primary,
           backgroundColor: `rgba(${themeValues.primaryrgb},0.1)`,
-          data: [456, 479, 424, 569],
+          data: [
+            456, 479, 424, 569, 610, 540, 588, 620, 552, 487, 530, 590 // Rastgele onaylanan veri
+          ],
         },
         {
-          label: 'Patty',
-          icon: 'loaf',
+          label: 'Red Edilen',
+          icon: 'times-circle',
           borderColor: themeValues.secondary,
           backgroundColor: `rgba(${themeValues.secondaryrgb},0.1)`,
-          data: [364, 504, 605, 400],
+          data: [
+            100, 120, 150, 130, 170, 180, 160, 190, 140, 110, 135, 125 // Rastgele red edilen veri
+          ],
         },
       ],
     };
   }, [themeValues]);
+
   const config = React.useMemo(() => {
     return {
       type: 'bar',

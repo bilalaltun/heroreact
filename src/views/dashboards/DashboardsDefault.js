@@ -12,12 +12,11 @@ import ChartLargeLineStock from 'views/interface/plugins/chart/ChartLargeLineSto
 import 'intro.js/introjs.css';
 
 const DashboardsDefault = () => {
-  const title = 'Dashboard';
-  const description = 'Default Dashboard';
+  const title = 'Masraf Raporları';
+  const description = 'Masraf raporları görüntüleme ekranı';
 
   const breadcrumbs = [
-    { to: '', text: 'Home' },
-    { to: 'dashboards', text: 'Dashboards' },
+    { to: 'dashboards/analytic', text: 'Anasayfa' },
   ];
 
   const [tourEnabled, setTourEnabled] = useState(false);
@@ -74,17 +73,7 @@ const DashboardsDefault = () => {
           {/* Title End */}
 
           {/* Top Buttons Start */}
-          <Col md="5" className="d-flex align-items-start justify-content-end">
-            <Button
-              variant="outline-primary"
-              className="btn-icon btn-icon-start btn-icon w-100 w-md-auto ms-1"
-              onClick={() => {
-                setTourEnabled(true);
-              }}
-            >
-              <CsLineIcons icon="flag" /> <span>Take a Tour</span>
-            </Button>
-          </Col>
+
           {/* Top Buttons End */}
         </Row>
       </div>
@@ -93,7 +82,7 @@ const DashboardsDefault = () => {
       <Row>
         <Col xl="6">
           {/* Sales & Stocks Charts Start */}
-          <h2 className="small-title">Sales & Stocks</h2>
+          <h2 className="small-title">Masraf Giriş Verileri</h2>
           <Card className="mb-2 h-auto sh-xl-24" id="introFirst">
             <Card.Body>
               <Row className="g-0 h-100">
@@ -111,7 +100,7 @@ const DashboardsDefault = () => {
           {/* Sales & Stocks Charts End */}
 
           {/* Stats Start */}
-          <h2 className="small-title">Stats</h2>
+          <h2 className="small-title">Kategorilere Göre Masraflar</h2>
           <Row className="gx-2">
             <Col className="p-0">
               <Glide
@@ -137,7 +126,7 @@ const DashboardsDefault = () => {
                       <div className="d-flex sh-5 sw-5 bg-gradient-light mb-3 align-items-center justify-content-center rounded-xl">
                         <CsLineIcons icon="alarm" className="text-white" />
                       </div>
-                      <p className="mb-0 lh-1">Pending Orders</p>
+                      <p className="mb-0 lh-1">Ulaşım</p>
                       <p className="cta-3 mb-0 text-primary">25</p>
                     </Card.Body>
                   </Card>
@@ -148,7 +137,7 @@ const DashboardsDefault = () => {
                       <div className="d-flex sh-5 sw-5 bg-gradient-light mb-3 align-items-center justify-content-center rounded-xl">
                         <CsLineIcons icon="navigate-diagonal" className="text-white" />
                       </div>
-                      <p className="mb-0 lh-1">Shipped Orders</p>
+                      <p className="mb-0 lh-1">Konaklama</p>
                       <p className="cta-3 mb-0 text-primary">48</p>
                     </Card.Body>
                   </Card>
@@ -159,7 +148,7 @@ const DashboardsDefault = () => {
                       <div className="d-flex sh-5 sw-5 bg-gradient-light mb-3 align-items-center justify-content-center rounded-xl">
                         <CsLineIcons icon="check-circle" className="text-white" />
                       </div>
-                      <p className="mb-0 lh-1">Delivered Orders</p>
+                      <p className="mb-0 lh-1">Sarf Malzeme</p>
                       <p className="cta-3 mb-0 text-primary">53</p>
                     </Card.Body>
                   </Card>
@@ -170,7 +159,7 @@ const DashboardsDefault = () => {
                       <div className="d-flex sh-5 sw-5 bg-gradient-light mb-3 align-items-center justify-content-center rounded-xl">
                         <CsLineIcons icon="arrow-bottom-left" className="text-white" />
                       </div>
-                      <p className="mb-0 lh-1">Returned Orders</p>
+                      <p className="mb-0 lh-1">Ofis Malzemesi</p>
                       <p className="cta-3 mb-0 text-primary">4</p>
                     </Card.Body>
                   </Card>
@@ -181,7 +170,7 @@ const DashboardsDefault = () => {
                       <div className="d-flex sh-5 sw-5 bg-gradient-light mb-3 align-items-center justify-content-center rounded-xl">
                         <CsLineIcons icon="warning-hexagon" className="text-white" />
                       </div>
-                      <p className="mb-0 lh-1">Unconfirmed Orders</p>
+                      <p className="mb-0 lh-1">Yemek</p>
                       <p className="cta-3 mb-0 text-primary">3</p>
                     </Card.Body>
                   </Card>
@@ -205,181 +194,8 @@ const DashboardsDefault = () => {
 
         {/* Products Start */}
         <Col xl="6" className="mb-5">
-          <h2 className="small-title">Products</h2>
-          <Card className="mb-2" id="introSecond">
-            <Row className="g-0 sh-12">
-              <Col xs="auto">
-                <NavLink to="/pages/portfolio/detail">
-                  <img src="/img/product/small/product-1.webp" alt="user" className="card-img card-img-horizontal sw-13 sw-lg-15" />
-                </NavLink>
-              </Col>
-              <Col>
-                <Card.Body className="pt-0 pb-0 h-100">
-                  <Row className="g-0 h-100 align-content-center">
-                    <Col md="7" className="d-flex flex-column mb-2 mb-md-0">
-                      <NavLink to="/pages/portfolio/detail">Kommissbrot</NavLink>
-                      <div className="text-small text-muted text-truncate">Icing liquorice olegário jujubes oat cake.</div>
-                    </Col>
-                    <Col md="5" className="d-flex align-items-center justify-content-md-end">
-                      <Button variant="outline-primary" size="sm" className="btn-icon btn-icon-start ms-1">
-                        <CsLineIcons icon="edit-square" width="15" height="15" className="me-xxl-2" />
-                        <span className="d-none d-xxl-inline-block">Edit</span>
-                      </Button>
-                      <Button variant="outline-primary" size="sm" className="btn-icon btn-icon-start ms-1">
-                        <CsLineIcons icon="bin" width="15" height="15" className="me-xxl-2" />
-                        <span className="d-none d-xxl-inline-block">Delete</span>
-                      </Button>
-                    </Col>
-                  </Row>
-                </Card.Body>
-              </Col>
-            </Row>
-          </Card>
-          <Card className="mb-2">
-            <Row className="g-0 sh-12">
-              <Col xs="auto">
-                <NavLink to="/pages/portfolio/detail">
-                  <img src="/img/product/small/product-2.webp" alt="user" className="card-img card-img-horizontal sw-13 sw-lg-15" />
-                </NavLink>
-              </Col>
-              <Col>
-                <Card.Body className="pt-0 pb-0 h-100">
-                  <Row className="g-0 h-100 align-content-center">
-                    <Col md="7" className="d-flex flex-column mb-2 mb-md-0">
-                      <NavLink to="/pages/portfolio/detail">Yeast Karavai</NavLink>
-                      <div className="text-small text-muted text-truncate">Icing Gummi liquorice olegário jujubes cookie.</div>
-                    </Col>
-                    <Col md="5" className="d-flex align-items-center justify-content-md-end">
-                      <Button variant="outline-primary" size="sm" className="btn-icon btn-icon-start ms-1">
-                        <CsLineIcons icon="edit-square" width="15" height="15" className="me-xxl-2" />
-                        <span className="d-none d-xxl-inline-block">Edit</span>
-                      </Button>
-                      <Button variant="outline-primary" size="sm" className="btn-icon btn-icon-start ms-1">
-                        <CsLineIcons icon="bin" width="15" height="15" className="me-xxl-2" />
-                        <span className="d-none d-xxl-inline-block">Delete</span>
-                      </Button>
-                    </Col>
-                  </Row>
-                </Card.Body>
-              </Col>
-            </Row>
-          </Card>
-          <Card className="mb-2">
-            <Row className="g-0 sh-12">
-              <Col xs="auto">
-                <NavLink to="/pages/portfolio/detail">
-                  <img src="/img/product/small/product-3.webp" alt="user" className="card-img card-img-horizontal sw-13 sw-lg-15" />
-                </NavLink>
-              </Col>
-              <Col>
-                <Card.Body className="pt-0 pb-0 h-100">
-                  <Row className="g-0 h-100 align-content-center">
-                    <Col md="7" className="d-flex flex-column mb-2 mb-md-0">
-                      <NavLink to="/pages/portfolio/detail">Cholermüs</NavLink>
-                      <div className="text-small text-muted text-truncate">Marshmallow topping icing liquorice oat cake.</div>
-                    </Col>
-                    <Col md="5" className="d-flex align-items-center justify-content-md-end">
-                      <Button variant="outline-primary" size="sm" className="btn-icon btn-icon-start ms-1">
-                        <CsLineIcons icon="edit-square" width="15" height="15" className="me-xxl-2" />
-                        <span className="d-none d-xxl-inline-block">Edit</span>
-                      </Button>
-                      <Button variant="outline-primary" size="sm" className="btn-icon btn-icon-start ms-1">
-                        <CsLineIcons icon="bin" width="15" height="15" className="me-xxl-2" />
-                        <span className="d-none d-xxl-inline-block">Delete</span>
-                      </Button>
-                    </Col>
-                  </Row>
-                </Card.Body>
-              </Col>
-            </Row>
-          </Card>
-          <Card className="mb-2">
-            <Row className="g-0 sh-12">
-              <Col xs="auto">
-                <NavLink to="/pages/portfolio/detail">
-                  <img src="/img/product/small/product-8.webp" alt="user" className="card-img card-img-horizontal sw-13 sw-lg-15" />
-                </NavLink>
-              </Col>
-              <Col>
-                <Card.Body className="pt-0 pb-0 h-100">
-                  <Row className="g-0 h-100 align-content-center">
-                    <Col md="7" className="d-flex flex-column mb-2 mb-md-0">
-                      <NavLink to="/pages/portfolio/detail">Cheesymite Scroll</NavLink>
-                      <div className="text-small text-muted text-truncate">Tootsie brownie ice cream marshmallow topping.</div>
-                    </Col>
-                    <Col md="5" className="d-flex align-items-center justify-content-md-end">
-                      <Button variant="outline-primary" size="sm" className="btn-icon btn-icon-start ms-1">
-                        <CsLineIcons icon="edit-square" width="15" height="15" className="me-xxl-2" />
-                        <span className="d-none d-xxl-inline-block">Edit</span>
-                      </Button>
-                      <Button variant="outline-primary" size="sm" className="btn-icon btn-icon-start ms-1">
-                        <CsLineIcons icon="bin" width="15" height="15" className="me-xxl-2" />
-                        <span className="d-none d-xxl-inline-block">Delete</span>
-                      </Button>
-                    </Col>
-                  </Row>
-                </Card.Body>
-              </Col>
-            </Row>
-          </Card>
-          <Card className="mb-2">
-            <Row className="g-0 sh-12">
-              <Col xs="auto">
-                <NavLink to="/pages/portfolio/detail">
-                  <img src="/img/product/small/product-9.webp" alt="user" className="card-img card-img-horizontal sw-13 sw-lg-15" />
-                </NavLink>
-              </Col>
-              <Col>
-                <Card.Body className="pt-0 pb-0 h-100">
-                  <Row className="g-0 h-100 align-content-center">
-                    <Col md="7" className="d-flex flex-column mb-2 mb-md-0">
-                      <NavLink to="/pages/portfolio/detail">Bazlama</NavLink>
-                      <div className="text-small text-muted text-truncate">Tootsie roll cream marshmallow chocolate bar.</div>
-                    </Col>
-                    <Col md="5" className="d-flex align-items-center justify-content-md-end">
-                      <Button variant="outline-primary" size="sm" className="btn-icon btn-icon-start ms-1">
-                        <CsLineIcons icon="edit-square" width="15" height="15" className="me-xxl-2" />
-                        <span className="d-none d-xxl-inline-block">Edit</span>
-                      </Button>
-                      <Button variant="outline-primary" size="sm" className="btn-icon btn-icon-start ms-1">
-                        <CsLineIcons icon="bin" width="15" height="15" className="me-xxl-2" />
-                        <span className="d-none d-xxl-inline-block">Delete</span>
-                      </Button>
-                    </Col>
-                  </Row>
-                </Card.Body>
-              </Col>
-            </Row>
-          </Card>
-          <Card>
-            <Row className="g-0 sh-12">
-              <Col xs="auto">
-                <NavLink to="/pages/portfolio/detail">
-                  <img src="/img/product/small/product-10.webp" alt="user" className="card-img card-img-horizontal sw-13 sw-lg-15" />
-                </NavLink>
-              </Col>
-              <Col>
-                <Card.Body className="pt-0 pb-0 h-100">
-                  <Row className="g-0 h-100 align-content-center">
-                    <Col md="7" className="d-flex flex-column mb-2 mb-md-0">
-                      <NavLink to="/pages/portfolio/detail">Soda Bread</NavLink>
-                      <div className="text-small text-muted text-truncate">Marshmallow topping icing liquorice oat cake.</div>
-                    </Col>
-                    <Col md="5" className="d-flex align-items-center justify-content-md-end">
-                      <Button variant="outline-primary" size="sm" className="btn-icon btn-icon-start ms-1">
-                        <CsLineIcons icon="edit-square" width="15" height="15" className="me-xxl-2" />
-                        <span className="d-none d-xxl-inline-block">Edit</span>
-                      </Button>
-                      <Button variant="outline-primary" size="sm" className="btn-icon btn-icon-start ms-1">
-                        <CsLineIcons icon="bin" width="15" height="15" className="me-xxl-2" />
-                        <span className="d-none d-xxl-inline-block">Delete</span>
-                      </Button>
-                    </Col>
-                  </Row>
-                </Card.Body>
-              </Col>
-            </Row>
-          </Card>
+          <h2 className="small-title">Filtreleme</h2>
+
         </Col>
         {/* Products End */}
       </Row>

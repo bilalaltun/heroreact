@@ -77,11 +77,11 @@ const AddEditModal = ({ tableInstance, addItem, editItem }) => {
             </div>
             <div className="mb-3 filled w-100 d-flex flex-column">
               <CsLineIcons icon="user" />
-              <Form.Control type="text" placeholder="Name" defaultValue={selectedItem ? selectedItem.name : ''} onChange={changeName} />
+              <Form.Control type="text" placeholder="İsim Soyisim" defaultValue={selectedItem ? selectedItem.name : ''} onChange={changeName} />
             </div>
             <div className="mb-3 filled w-100 d-flex flex-column">
               <CsLineIcons icon="suitcase" />
-              <Form.Control type="text" placeholder="Position" defaultValue={selectedItem ? selectedItem.position : ''} onChange={changePosition} />
+              <Form.Control type="text" placeholder="Pozisyon" defaultValue={selectedItem ? selectedItem.position : ''} onChange={changePosition} />
             </div>
             <div className="mb-3 filled w-100 d-flex flex-column">
               <CsLineIcons icon="email" />
@@ -89,7 +89,7 @@ const AddEditModal = ({ tableInstance, addItem, editItem }) => {
             </div>
             <div className="mb-3 filled w-100 d-flex flex-column">
               <CsLineIcons icon="phone" />
-              <Form.Control type="text" placeholder="Phone" defaultValue={selectedItem ? selectedItem.phone : ''} onChange={changePhone} />
+              <Form.Control type="text" placeholder="Telefon" defaultValue={selectedItem ? selectedItem.phone : ''} onChange={changePhone} />
             </div>
             <div className="mb-3 filled w-100">
               <CsLineIcons icon="diagram-1" />

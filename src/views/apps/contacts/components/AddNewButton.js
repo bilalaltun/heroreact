@@ -11,7 +11,7 @@ const AddNewButton = ({ tableInstance }) => {
   };
   return (
     <Button variant="outline-primary" className="btn-icon btn-icon-start ms-0 ms-sm-1 w-100 w-md-auto" onClick={addButtonClick}>
-      <CsLineIcons icon="plus" /> <span>Add Contact</span>
+      <CsLineIcons icon="plus" /> <span>Yeni Personel</span>
     </Button>
   );
 };

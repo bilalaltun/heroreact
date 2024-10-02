@@ -29,17 +29,17 @@ const CustomToggle = React.forwardRef(({ onClick }, ref) => (
 ));
 
 const colorsMap = [
-  { color: 'primary', category: 'Work' },
-  { color: 'secondary', category: 'Education' },
-  { color: 'tertiary', category: 'Personal' },
+  { color: 'primary', category: 'Gıda' },
+  { color: 'secondary', category: 'Ulaşım' },
+  { color: 'tertiary', category: 'Konaklama' },
 ];
 const CalendarApp = () => {
-  const htmlTitle = 'Calendar';
-  const htmlDescription = 'Implementation for a basic events and schedule application that built on top of Full Calendar plugin.';
+  const htmlTitle = 'Masraf Takvimi';
+  const htmlDescription = 'Masraf Takvimi';
 
   const breadcrumbs = [
-    { to: '', text: 'Home' },
-    { to: 'apps', title: 'Apps' },
+    { to: '', text: 'Anasayfa' },
+    { to: 'apps', title: 'Uygulamalar' },
   ];
 
   const calendarRef = useRef(null);
@@ -80,7 +80,7 @@ const CalendarApp = () => {
   };
   const onNewEventClick = () => {
     try {
-      dispatch(setSelectedEvent({ id: 0, title: 'New Event', start: '', end: '' }));
+      dispatch(setSelectedEvent({ id: 0, title: 'Yeni Masraf', start: '', end: '' }));
       setIsShowModalAddEdit(true);
     } catch (e) {
       console.log('This action could not be completed');
@@ -190,7 +190,7 @@ const CalendarApp = () => {
           </Col>
           <Col md="auto" className="d-flex align-items-start justify-content-end">
             <Button variant="outline-primary" className="btn-icon btn-icon-start ms-1 w-100 w-md-auto" onClick={onNewEventClick}>
-              <CsLineIcons icon="plus" /> <span>Add Event</span>
+              <CsLineIcons icon="plus" /> <span>Masraf Ekle</span>
             </Button>
           </Col>
         </Row>

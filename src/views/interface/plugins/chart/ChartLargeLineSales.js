@@ -75,10 +75,10 @@ const ChartLargeLineSales = () => {
 
   const data = React.useMemo(() => {
     return {
-      labels: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Today'],
+      labels: ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Bugün'],
       datasets: [
         {
-          label: 'Sales',
+          label: 'Masraf Giriş Sayısı',
           data: [23, 24, 26, 30, 27],
           icons: ['arrow-top', 'arrow-top', 'arrow-top', 'arrow-top', 'arrow-bottom'],
           borderColor: themeValues.primary,
@@ -187,16 +187,16 @@ const ChartLargeLineSales = () => {
   return (
     <>
       <Col xs="12" sm="auto" className="d-flex flex-column justify-content-between custom-tooltip pe-0 pe-sm-4">
-        <p className="heading title mb-1">Sales</p>
+        <p className="heading title mb-1">Masraf Giriş Sayısı</p>
         <div ref={tooltipRef} />
         <Row>
           <Col xs="auto">
             <div className="cta-3 text-alternate">84</div>
-            <div className="text-small text-muted mb-1">THIS WEEK</div>
+            <div className="text-small text-muted mb-1">Bu Hafta</div>
           </Col>
           <Col>
             <div className="cta-3 text-alternate">792</div>
-            <div className="text-small text-muted mb-1">THIS MONTH</div>
+            <div className="text-small text-muted mb-1">Bu Ay</div>
           </Col>
         </Row>
       </Col>

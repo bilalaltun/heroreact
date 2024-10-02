@@ -35,10 +35,10 @@ export const DEFAULT_SETTINGS = {
 
 export const DEFAULT_USER = {
   id: 1,
-  name: 'Lisa Jackson',
-  thumb: '/img/profile/profile-9.webp',
+  name: 'Super Admin',
+  thumb: '/img/profile/profile-3.webp',
   role: USER_ROLE.Admin,
-  email: 'lisajackson@gmail.com',
+  email: 'admin@herohrm.com',
 };
 
 export const REDUX_PERSIST_KEY = 'classic-dashboard';
