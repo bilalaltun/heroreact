@@ -12,6 +12,8 @@ import { getRoutes } from 'routing/helper';
 import routesAndMenuItems from 'routes.js';
 import Loading from 'components/loading/Loading';
 
+
+
 const App = () => {
   const { currentUser, isLogin } = useSelector((state) => state.auth);
 

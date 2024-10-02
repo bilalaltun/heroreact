@@ -70,7 +70,7 @@ const Login = () => {
               </NavLink>
               {errors.password && touched.password && <div className="d-block invalid-tooltip">{errors.password}</div>}
             </div>
-            <Button size="lg" type="submit">
+            <Button size="lg" type="submit" href="/dashboards/analytic">
               Giriş
             </Button>
           </form>
