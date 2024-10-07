@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
 import { Row, Col, Form, Button, Card, Table } from 'react-bootstrap';
 import Swal from 'sweetalert2';
+<<<<<<< HEAD
+=======
+import Cookies from 'js-cookie';
+
+>>>>>>> c13e0d8 (testtttt)
 
 const MasrafEkle = () => {
   const [rows, setRows] = useState([
@@ -50,7 +55,12 @@ const MasrafEkle = () => {
       }
     });
   };
+<<<<<<< HEAD
   
+=======
+  const fullName = Cookies.get('fullName');
+
+>>>>>>> c13e0d8 (testtttt)
 
   return (
     <div className="container-fluid">
@@ -64,11 +74,15 @@ const MasrafEkle = () => {
                   <tbody>
                     <tr>
                       <th><Form.Label>Kullanıcı</Form.Label></th>
+<<<<<<< HEAD
                       <td><Form.Control type="text" value="User 1" readOnly /></td>
                     </tr>
                     <tr>
                       <th><Form.Label>Masraf No</Form.Label></th>
                       <td><Form.Control type="text" value="2024/1" readOnly /></td>
+=======
+                      <td><Form.Control type="text" value={fullName} readOnly /></td>
+>>>>>>> c13e0d8 (testtttt)
                     </tr>
                     <tr>
                       <th><Form.Label>Fiş No</Form.Label></th>

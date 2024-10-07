@@ -1,22 +1,78 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useHistory } from 'react-router-dom';
 import { Button, Form } from 'react-bootstrap';
 import * as Yup from 'yup';
 import { useFormik } from 'formik';
 import LayoutFullpage from 'layout/LayoutFullpage';
 import CsLineIcons from 'cs-line-icons/CsLineIcons';
 import HtmlHead from 'components/html-head/HtmlHead';
+import Swal from 'sweetalert2';
+import axios from 'axios';
+import Cookies from 'js-cookie';
+
+const removeSwalClasses = () => {
+  document.body.classList.remove('swal2-height-auto');
+};
 
 const Login = () => {
+  const history = useHistory();
   const title = 'Kullanıcı Giriş Ekranı';
   const description = 'Hero HRM Kullancı Giriş Sayfası';
 
   const validationSchema = Yup.object().shape({
     email: Yup.string().email().required('Email zorunlu'),
-    password: Yup.string().min(1, 'Minimum 4 karakter olmalı').required('Parola Girmek Zorunludur'),
+    password: Yup.string().min(4, 'Minimum 4 karakter olmalı').required('Parola Girmek Zorunludur'),
   });
+
   const initialValues = { email: '', password: '' };
-  const onSubmit = (values) => console.log('submit form', values);
+
+  const onSubmit = async (values) => {
+    try {
+      const response = await axios.post('https://api.herohrm.com/api/Auth/Login', values, {
+        headers: {
+          'Content-Type': 'application/json-patch+json',
+          'accept': '*/*',
+        },
+      });
+
+      const { token, fullName, isSucceeded } = response.data;
+
+      if (isSucceeded) {
+        Cookies.set('accessToken', token.accessToken);
+        Cookies.set('refreshToken', token.refreshToken);
+        Cookies.set('fullName', fullName);
+
+        Swal.fire({
+          icon: 'success',
+          title: 'Giriş Başarılı',
+          text: `Hoşgeldiniz, ${fullName}`,
+          willOpen: () => {
+            removeSwalClasses();
+          },
+        }).then(() => {
+          history.push('/dashboards/analytic');
+        });
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Giriş Başarısız',
+          text: 'Lütfen bilgilerinizi kontrol edin ve tekrar deneyin.',
+          willOpen: () => {
+            removeSwalClasses();
+          },
+        });
+      }
+    } catch (error) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Hata',
+        text: 'Bir hata oluştu. Lütfen tekrar deneyin.',
+        willOpen: () => {
+          removeSwalClasses();
+        },
+      });
+    }
+  };
 
   const formik = useFormik({ initialValues, validationSchema, onSubmit });
   const { handleSubmit, handleChange, values, touched, errors } = formik;
@@ -24,8 +80,6 @@ const Login = () => {
   const leftSide = (
     <div className="min-h-100 d-flex align-items-center">
       <div className="w-100 w-lg-400 w-xxl-95">
-        {' '}
-        {/* Genişliği artırdık */}
         <div>
           <div className="mb-5">
             <h1 className="display-3 text-white">Hero HRM</h1>
@@ -70,7 +124,7 @@ const Login = () => {
               </NavLink>
               {errors.password && touched.password && <div className="d-block invalid-tooltip">{errors.password}</div>}
             </div>
-            <Button size="lg" type="submit" href="/dashboards/analytic">
+            <Button size="lg" type="submit">
               Giriş
             </Button>
           </form>

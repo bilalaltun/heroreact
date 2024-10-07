@@ -1,4 +1,9 @@
 import { LAYOUT, MENU_BEHAVIOUR, NAV_COLOR, MENU_PLACEMENT, RADIUS, THEME_COLOR, USER_ROLE } from 'constants.js';
+<<<<<<< HEAD
+=======
+import Cookies from 'js-cookie';
+
+>>>>>>> c13e0d8 (testtttt)
 
 export const IS_DEMO = true;
 export const IS_AUTH_GUARD_ACTIVE = true;
@@ -23,6 +28,11 @@ export const DEFAULT_PATHS = {
   INVALID_ACCESS: '/invalid-access',
 };
 
+<<<<<<< HEAD
+=======
+// Çerezden fullName değerini al
+
+>>>>>>> c13e0d8 (testtttt)
 export const DEFAULT_SETTINGS = {
   MENU_PLACEMENT: MENU_PLACEMENT.Horizontal,
   MENU_BEHAVIOUR: MENU_BEHAVIOUR.Pinned,
@@ -33,9 +43,17 @@ export const DEFAULT_SETTINGS = {
   USE_SIDEBAR: false,
 };
 
+<<<<<<< HEAD
 export const DEFAULT_USER = {
   id: 1,
   name: 'Super Admin',
+=======
+const fullName = Cookies.get('fullName');
+
+export const DEFAULT_USER = {
+  id: 1,
+  name: fullName,
+>>>>>>> c13e0d8 (testtttt)
   thumb: '/img/profile/profile-3.webp',
   role: USER_ROLE.Admin,
   email: 'admin@herohrm.com',
