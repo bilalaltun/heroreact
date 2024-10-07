@@ -1,19 +1,50 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Row, Col, Form, Button, Card, Table } from 'react-bootstrap';
 import Swal from 'sweetalert2';
-<<<<<<< HEAD
-=======
 import Cookies from 'js-cookie';
-
->>>>>>> c13e0d8 (testtttt)
 
 const MasrafEkle = () => {
   const [rows, setRows] = useState([
     { id: 1, urunAdi: '', toplamTutar: '', kdvOrani: '', kdvTutar: '', matrah: '', selected: false }
   ]);
+  const [projects, setProjects] = useState([]); // Projeleri saklayacak state
   const [selectedImage, setSelectedImage] = useState(null);
   const [date, setDate] = useState('-');
   const [time, setTime] = useState('-');
+
+  const token = Cookies.get('accessToken'); // Cookie'den accessToken alınır
+
+  // Proje listesini API'den al
+  useEffect(() => {
+    const fetchProjects = async () => {
+      if (!token) {
+        console.error("Token bulunamadı");
+        return;
+      }
+
+      try {
+        const response = await fetch('https://api.herohrm.com/api/Project/GetProjects', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`, // Token'ı Authorization başlığına ekle
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log('Proje verisi:', data);
+          setProjects(Array.isArray(data.data) ? data.data : []); // API'den gelen veriyi doğru alan ile işleyin
+        } else {
+          console.error('Projeleri listeleme başarısız:', response.status, response.statusText);
+        }
+      } catch (error) {
+        console.error('API isteği başarısız:', error);
+      }
+    };
+
+    fetchProjects(); // API isteğini tetikle
+  }, [token]);
 
   const addRow = () => {
     const newRow = {
@@ -55,12 +86,8 @@ const MasrafEkle = () => {
       }
     });
   };
-<<<<<<< HEAD
-  
-=======
-  const fullName = Cookies.get('fullName');
 
->>>>>>> c13e0d8 (testtttt)
+  const fullName = Cookies.get('fullName') || 'Kullanıcı'; // Eğer fullName yoksa varsayılan değer 'Kullanıcı'
 
   return (
     <div className="container-fluid">
@@ -74,15 +101,11 @@ const MasrafEkle = () => {
                   <tbody>
                     <tr>
                       <th><Form.Label>Kullanıcı</Form.Label></th>
-<<<<<<< HEAD
-                      <td><Form.Control type="text" value="User 1" readOnly /></td>
+                      <td><Form.Control type="text" value={fullName} readOnly /></td>
                     </tr>
                     <tr>
                       <th><Form.Label>Masraf No</Form.Label></th>
                       <td><Form.Control type="text" value="2024/1" readOnly /></td>
-=======
-                      <td><Form.Control type="text" value={fullName} readOnly /></td>
->>>>>>> c13e0d8 (testtttt)
                     </tr>
                     <tr>
                       <th><Form.Label>Fiş No</Form.Label></th>
@@ -97,8 +120,13 @@ const MasrafEkle = () => {
                       <td>
                         <Form.Select>
                           <option>Proje Seçiniz</option>
-                          <option>Martı</option>
+                          {projects.map(project => (
+                            <option key={project.id} value={project.id}>
+                              {project.projectName} {/* Proje adı olarak projectName kullanılıyor */}
+                            </option>
+                          ))}
                         </Form.Select>
+
                       </td>
                     </tr>
                     <tr>
@@ -175,7 +203,7 @@ const MasrafEkle = () => {
                   id="preview-image"
                   className="img-fluid"
                   alt=""
-                  src={selectedImage || '/assets/images/fisekleyiniz.jpeg'}
+                  src={selectedImage || '/assets/images/fisekleyiniz.jpeg'} // Resim yolunun doğru olduğundan emin olun
                   style={{ height: '100%', maxHeight: '90px' }}
                 />
                 <input

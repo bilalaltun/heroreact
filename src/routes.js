@@ -9,10 +9,6 @@ const dashboards = {
   visual: lazy(() => import('views/dashboards/DashboardsVisual')),
   analytic: lazy(() => import('views/dashboards/DashboardsAnalytic')),
 };
-<<<<<<< HEAD
-=======
-
->>>>>>> c13e0d8 (testtttt)
 const apps = {
   index: lazy(() => import('views/apps/Apps')),
   calendar: lazy(() => import('views/apps/calendar/Calendar')),
@@ -179,10 +175,7 @@ const routesAndMenuItems = {
       path: DEFAULT_PATHS.APP,
       exact: true,
       redirect: true,
-<<<<<<< HEAD
-=======
       //to: `${appRoot}/dashboards/analytic`,
->>>>>>> c13e0d8 (testtttt)
       to: `${appRoot}/login`,
     },
     {
@@ -205,11 +198,8 @@ const routesAndMenuItems = {
     {
       path: `${appRoot}/masraf`,
       label: 'Masraflar',
-<<<<<<< HEAD
       icon: 'screen',
-=======
       icon: 'home-garage',
->>>>>>> c13e0d8 (testtttt)
       component: masraf.index,
       subs: [
         { path: '/masrafekle', label: 'Masraf Ekle', component: masraf.masrafekle },
