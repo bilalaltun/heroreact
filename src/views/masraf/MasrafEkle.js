@@ -7,12 +7,27 @@ const MasrafEkle = () => {
   const [rows, setRows] = useState([
     { id: 1, urunAdi: '', toplamTutar: '', kdvOrani: '', kdvTutar: '', matrah: '', selected: false }
   ]);
-  const [projects, setProjects] = useState([]); // Projeleri saklayacak state
+  const [projects, setProjects] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [taxRates, setTaxRates] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
   const [date, setDate] = useState('-');
   const [time, setTime] = useState('-');
 
-  const token = Cookies.get('accessToken'); // Cookie'den accessToken alınır
+  const [selectedCategoryId, setSelectedCategoryId] = useState('');
+  const [selectedSubCategoryId, setSelectedSubCategoryId] = useState(''); // Yeni SubCategoryId
+  const [selectedProjectId, setSelectedProjectId] = useState('');
+  const [vendorName, setVendorName] = useState('');
+  const [receiptNumber, setReceiptNumber] = useState('');
+  const [receiptDate, setReceiptDate] = useState('');
+  const [taxOffice, setTaxOffice] = useState('');
+  const [vendorTaxNumber, setVendorTaxNumber] = useState('');
+  const [totalAmount, setTotalAmount] = useState('');
+  const [taxTotal, setTaxTotal] = useState('');
+  const [baseTotal, setBaseTotal] = useState('');
+  const [commentText, setCommentText] = useState('');
+
+  const token = Cookies.get('accessToken');
 
   // Proje listesini API'den al
   useEffect(() => {
@@ -26,15 +41,14 @@ const MasrafEkle = () => {
         const response = await fetch('https://api.herohrm.com/api/Project/GetProjects', {
           method: 'GET',
           headers: {
-            'Authorization': `Bearer ${token}`, // Token'ı Authorization başlığına ekle
+            'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
           }
         });
 
         if (response.ok) {
           const data = await response.json();
-          console.log('Proje verisi:', data);
-          setProjects(Array.isArray(data.data) ? data.data : []); // API'den gelen veriyi doğru alan ile işleyin
+          setProjects(Array.isArray(data.data) ? data.data : []);
         } else {
           console.error('Projeleri listeleme başarısız:', response.status, response.statusText);
         }
@@ -43,7 +57,69 @@ const MasrafEkle = () => {
       }
     };
 
-    fetchProjects(); // API isteğini tetikle
+    fetchProjects();
+  }, [token]);
+
+  // Kategori listesini API'den al
+  useEffect(() => {
+    const fetchCategories = async () => {
+      if (!token) {
+        console.error("Token bulunamadı");
+        return;
+      }
+
+      try {
+        const response = await fetch('https://api.herohrm.com/api/Category/GetCategories', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setCategories(Array.isArray(data.data) ? data.data : []);
+        } else {
+          console.error('Kategorileri listeleme başarısız:', response.status, response.statusText);
+        }
+      } catch (error) {
+        console.error('API isteği başarısız:', error);
+      }
+    };
+
+    fetchCategories();
+  }, [token]);
+
+  // KDV oranlarını API'den al
+  useEffect(() => {
+    const fetchTaxRates = async () => {
+      if (!token) {
+        console.error("Token bulunamadı");
+        return;
+      }
+
+      try {
+        const response = await fetch('https://api.herohrm.com/api/Tax', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setTaxRates(Array.isArray(data.data) ? data.data : []);
+        } else {
+          console.error('KDV oranlarını listeleme başarısız:', response.status, response.statusText);
+        }
+      } catch (error) {
+        console.error('API isteği başarısız:', error);
+      }
+    };
+
+    fetchTaxRates();
   }, [token]);
 
   const addRow = () => {
@@ -66,28 +142,71 @@ const MasrafEkle = () => {
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
-      setSelectedImage(URL.createObjectURL(file));
+      setSelectedImage(file); // Resim dosyasını kaydediyoruz
       const currentDate = new Date();
       setDate(currentDate.toLocaleDateString());
       setTime(currentDate.toLocaleTimeString());
     }
   };
 
-  const handleSave = () => {
-    Swal.fire({
-      title: 'Kaydetmek istediğinizden emin misiniz?',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Evet, kaydet',
-      cancelButtonText: 'Hayır, iptal et',
-    }).then((result) => {
-      if (result.isConfirmed) {
-        Swal.fire('Kaydedildi!', 'Masraf kaydedildi.', 'success');
-      }
+  const handleSave = async () => {
+    // Zorunlu alanların boş olup olmadığını kontrol et
+    if (!selectedCategoryId || !selectedProjectId || !vendorName || !receiptNumber || !receiptDate || !taxOffice || !vendorTaxNumber) {
+      Swal.fire('Hata', 'Lütfen tüm zorunlu alanları doldurun.', 'error');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('categoryId', selectedCategoryId);
+    formData.append('subCategoryId', selectedSubCategoryId); // SubCategoryId eklendi
+    formData.append('projectId', selectedProjectId);
+    formData.append('vendorCamp', vendorName);
+    formData.append('receiptNum', receiptNumber);
+    formData.append('receiptDate', new Date(receiptDate).toISOString()); // ISO formatında tarih
+    formData.append('taxOffice', taxOffice);
+    formData.append('vendorTaxNum', vendorTaxNumber);
+    formData.append('totalAmount', totalAmount);
+    formData.append('taxTotal', taxTotal);
+    formData.append('baseTotal', baseTotal);
+    formData.append('comment', commentText);
+
+    rows.forEach((row, index) => {
+      formData.append(`ExpenseDetail[${index}].ProductName`, row.urunAdi);
+      formData.append(`ExpenseDetail[${index}].TotalAmount`, row.toplamTutar);
+      formData.append(`ExpenseDetail[${index}].TaxAmount`, row.kdvTutar);
+      formData.append(`ExpenseDetail[${index}].BaseTotal`, row.matrah);
+      formData.append(`ExpenseDetail[${index}].TaxId`, row.taxId); // Burada TaxId'yi ekledik
     });
+
+    if (selectedImage) {
+      formData.append('ExpenseImage', selectedImage);
+    } else {
+      Swal.fire('Hata', 'Lütfen bir resim ekleyin.', 'error');
+      return;
+    }
+
+    try {
+      const response = await fetch('https://api.herohrm.com/api/Expense/AddExpense', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData,
+      });
+
+      if (response.ok) {
+        Swal.fire('Başarılı!', 'Masraf başarıyla kaydedildi.', 'success');
+      } else {
+        const errorData = await response.json();
+        Swal.fire('Hata', `Masraf kaydedilemedi: ${errorData.message}`, 'error');
+      }
+    } catch (error) {
+      console.error('API isteği başarısız:', error);
+      Swal.fire('Hata', 'Masraf kaydedilemedi', 'error');
+    }
   };
 
-  const fullName = Cookies.get('fullName') || 'Kullanıcı'; // Eğer fullName yoksa varsayılan değer 'Kullanıcı'
+  const fullName = Cookies.get('fullName') || 'Kullanıcı';
 
   return (
     <div className="container-fluid">
@@ -109,84 +228,71 @@ const MasrafEkle = () => {
                     </tr>
                     <tr>
                       <th><Form.Label>Fiş No</Form.Label></th>
-                      <td><Form.Control type="text" placeholder="Fiş No" /></td>
+                      <td><Form.Control type="text" value={receiptNumber} onChange={(e) => setReceiptNumber(e.target.value)} /></td>
                     </tr>
                     <tr>
                       <th><Form.Label>Fiş Tarihi</Form.Label></th>
-                      <td><Form.Control type="date" /></td>
+                      <td><Form.Control type="date" value={receiptDate} onChange={(e) => setReceiptDate(e.target.value)} /></td>
                     </tr>
                     <tr>
                       <th><Form.Label>Proje</Form.Label></th>
                       <td>
-                        <Form.Select>
+                        <Form.Select value={selectedProjectId} onChange={(e) => setSelectedProjectId(e.target.value)}>
                           <option>Proje Seçiniz</option>
                           {projects.map(project => (
                             <option key={project.id} value={project.id}>
-                              {project.projectName} {/* Proje adı olarak projectName kullanılıyor */}
+                              {project.projectName}
                             </option>
                           ))}
                         </Form.Select>
-
                       </td>
                     </tr>
                     <tr>
                       <th><Form.Label>Kategori</Form.Label></th>
                       <td>
-                        <Form.Select>
+                        <Form.Select value={selectedCategoryId} onChange={(e) => setSelectedCategoryId(e.target.value)}>
                           <option>Kategori Seçiniz</option>
-                          <option>Gıda</option>
-                          <option>Ulaşım</option>
+                          {categories.map(category => (
+                            <option key={category.id} value={category.id}>
+                              {category.categoryName}
+                            </option>
+                          ))}
                         </Form.Select>
                       </td>
                     </tr>
                     <tr>
-                      <th><Form.Label>Alt Kategori</Form.Label></th>
+                      <th><Form.Label>Alt Kategori</Form.Label></th> {/* SubCategoryId */}
                       <td>
-                        <Form.Select>
-                          <option>Seçiniz</option>
-                          <option>Kategori 1</option>
-                          <option>Kategori 2</option>
-                        </Form.Select>
+                        <Form.Control type="text" value={selectedSubCategoryId} onChange={(e) => setSelectedSubCategoryId(e.target.value)} />
                       </td>
                     </tr>
                     <tr>
                       <th><Form.Label>Satıcı Firma</Form.Label></th>
-                      <td><Form.Control type="text" placeholder="Satıcı Firma Giriniz" /></td>
+                      <td><Form.Control type="text" value={vendorName} onChange={(e) => setVendorName(e.target.value)} /></td>
                     </tr>
                     <tr>
                       <th><Form.Label>Vergi Dairesi</Form.Label></th>
-                      <td><Form.Control type="text" placeholder="Vergi Dairesi Giriniz" /></td>
+                      <td><Form.Control type="text" value={taxOffice} onChange={(e) => setTaxOffice(e.target.value)} /></td>
                     </tr>
                     <tr>
                       <th><Form.Label>Vergi Numarası</Form.Label></th>
-                      <td><Form.Control type="number" placeholder="Vergi Numarası Giriniz" /></td>
+                      <td><Form.Control type="text" value={vendorTaxNumber} onChange={(e) => setVendorTaxNumber(e.target.value)} /></td>
                     </tr>
                     <tr>
                       <th><Form.Label>Toplam Tutar</Form.Label></th>
-                      <td><Form.Control type="number" placeholder="Tutar" readOnly /></td>
-                    </tr>
-                    <tr>
-                      <th><Form.Label>KDV Oranı</Form.Label></th>
-                      <td>
-                        <Form.Select>
-                          <option>Seçiniz</option>
-                          <option>1</option>
-                          <option>10</option>
-                          <option>20</option>
-                        </Form.Select>
-                      </td>
+                      <td><Form.Control type="number" value={totalAmount} onChange={(e) => setTotalAmount(e.target.value)} /></td>
                     </tr>
                     <tr>
                       <th><Form.Label>KDV Tutarı</Form.Label></th>
-                      <td><Form.Control type="text" placeholder="KDV Tutarı" readOnly /></td>
+                      <td><Form.Control type="text" value={taxTotal} onChange={(e) => setTaxTotal(e.target.value)} /></td>
                     </tr>
                     <tr>
                       <th><Form.Label>Matrah</Form.Label></th>
-                      <td><Form.Control type="text" placeholder="Matrah" readOnly /></td>
+                      <td><Form.Control type="text" value={baseTotal} onChange={(e) => setBaseTotal(e.target.value)} /></td>
                     </tr>
                     <tr>
                       <th><Form.Label>Açıklama</Form.Label></th>
-                      <td><Form.Control as="textarea" rows={3} placeholder="Açıklama Giriniz" /></td>
+                      <td><Form.Control as="textarea" rows={3} value={commentText} onChange={(e) => setCommentText(e.target.value)} /></td>
                     </tr>
                   </tbody>
                 </Table>
@@ -203,7 +309,7 @@ const MasrafEkle = () => {
                   id="preview-image"
                   className="img-fluid"
                   alt=""
-                  src={selectedImage || '/assets/images/fisekleyiniz.jpeg'} // Resim yolunun doğru olduğundan emin olun
+                  src={selectedImage ? URL.createObjectURL(selectedImage) : '/assets/images/fisekleyiniz.jpeg'}
                   style={{ height: '100%', maxHeight: '90px' }}
                 />
                 <input
@@ -258,27 +364,83 @@ const MasrafEkle = () => {
                   {rows.map((row, index) => (
                     <tr key={index}>
                       <td>{row.id}</td>
-                      <td><Form.Control type="text" value={row.urunAdi} /></td>
-                      <td><Form.Control type="text" value={row.toplamTutar} /></td>
                       <td>
-                        <Form.Select value={row.kdvOrani}>
+                        <Form.Control
+                          type="text"
+                          value={row.urunAdi}
+                          onChange={(e) => {
+                            const updatedRows = rows.map((r) =>
+                              r.id === row.id ? { ...r, urunAdi: e.target.value } : r
+                            );
+                            setRows(updatedRows);
+                          }}
+                        />
+                      </td>
+                      <td>
+                        <Form.Control
+                          type="text"
+                          value={row.toplamTutar}
+                          onChange={(e) => {
+                            const updatedRows = rows.map((r) =>
+                              r.id === row.id ? { ...r, toplamTutar: e.target.value } : r
+                            );
+                            setRows(updatedRows);
+                          }}
+                        />
+                      </td>
+                      <td>
+                        <Form.Select
+                          value={row.kdvOrani}
+                          onChange={(e) => {
+                            const selectedTax = taxRates.find(rate => rate.taxRate === e.target.value);
+                            const updatedRows = rows.map((r) =>
+                              r.id === row.id
+                                ? { ...r, kdvOrani: e.target.value, taxId: selectedTax?.id } // taxId'yi de burada ekledik
+                                : r
+                            );
+                            setRows(updatedRows);
+                          }}
+                        >
                           <option>Lütfen KDV oranını seçin</option>
-                          <option>1</option>
-                          <option>10</option>
-                          <option>20</option>
+                          {taxRates.map((rate) => (
+                            <option key={rate.id} value={rate.taxRate}>
+                              {rate.taxRate}
+                            </option>
+                          ))}
                         </Form.Select>
                       </td>
-                      <td><Form.Control type="text" value={row.kdvTutar} readOnly /></td>
-                      <td><Form.Control type="text" value={row.matrah} readOnly /></td>
+                      <td>
+                        <Form.Control
+                          type="text"
+                          value={row.kdvTutar}
+                          onChange={(e) => {
+                            const updatedRows = rows.map((r) =>
+                              r.id === row.id ? { ...r, kdvTutar: e.target.value } : r
+                            );
+                            setRows(updatedRows);
+                          }}
+                        />
+                      </td>
+                      <td>
+                        <Form.Control
+                          type="text"
+                          value={row.matrah}
+                          onChange={(e) => {
+                            const updatedRows = rows.map((r) =>
+                              r.id === row.id ? { ...r, matrah: e.target.value } : r
+                            );
+                            setRows(updatedRows);
+                          }}
+                        />
+                      </td>
                       <td>
                         <Form.Check
                           type="checkbox"
                           checked={row.selected}
                           onChange={(e) => {
-                            const updatedRows = rows.map(r => {
-                              if (r.id === row.id) r.selected = e.target.checked;
-                              return r;
-                            });
+                            const updatedRows = rows.map((r) =>
+                              r.id === row.id ? { ...r, selected: e.target.checked } : r
+                            );
                             setRows(updatedRows);
                           }}
                         />
