@@ -11,24 +11,6 @@ const contactsAppData = [
     group: 'Admin',
     thumb: '/img/profile/profile-3.webp',
   },
-  {
-    id: 2,
-    name: 'Burak Coskuner',
-    position: 'Manager',
-    email: 'burak.coskuner@aifteam.com',
-    phone: '+905446187708',
-    group: 'Admin',
-    thumb: '/img/profile/profile-3.webp',
-  },
-  {
-    id: 3,
-    name: 'Bilal Altun',
-    position: 'Manager',
-    email: 'bilal.altun@aifteam.com',
-    phone: '+905446187708',
-    group: 'Admin',
-    thumb: '/img/profile/profile-3.webp',
-  },
 ];
 api.onGet(`${SERVICE_URL}/apps/contacts`).reply((config) => {
   const { term, sortBy, pageSize, pageIndex } = config.params;

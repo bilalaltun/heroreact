@@ -11,67 +11,83 @@ const MasrafListele = () => {
   const breadcrumbs = [{ to: '', text: 'Home' }];
 
   const [filterVisible, setFilterVisible] = useState(false);
-  const [users, setUsers] = useState([]); // Kullanıcıları tutmak için state
-  const [categories, setCategories] = useState([]); // Kategorileri tutmak için state
-  const [selectedCategory, setSelectedCategory] = useState(''); // Seçilen kategori
-  const [subCategories, setSubCategories] = useState([]); // Seçilen kategorinin alt kategorileri
-  const [projects, setProjects] = useState([]); // Projeleri tutmak için state
+  const [users, setUsers] = useState([]); 
+  const [categories, setCategories] = useState([]); 
+  const [selectedCategory, setSelectedCategory] = useState(''); 
+  const [subCategories, setSubCategories] = useState([]); 
+  const [projects, setProjects] = useState([]); 
+  const [expenses, setExpenses] = useState([]); 
 
   const toggleFilter = () => {
     setFilterVisible(!filterVisible);
   };
 
-  // Kullanıcıları, kategorileri ve projeleri API'den çekmek için useEffect
   useEffect(() => {
-    const fetchUsersCategoriesAndProjects = async () => {
+    const fetchData = async () => {
       try {
         const accessToken = document.cookie
           .split('; ')
           .find((row) => row.startsWith('accessToken='))
           ?.split('=')[1];
 
-        // Kullanıcıları çek
         const userResponse = await axios.get('https://api.herohrm.com/api/Admin/GetUsers', {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
         });
-        setUsers(userResponse.data.users); // Gelen kullanıcıları kaydet
+        setUsers(userResponse.data.users);
 
-        // Kategorileri çek
         const categoryResponse = await axios.get('https://api.herohrm.com/api/Category/GetCategories', {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
         });
-        setCategories(categoryResponse.data.data); // Gelen kategorileri kaydet
+        setCategories(categoryResponse.data.data);
 
-        // Projeleri çek
         const projectResponse = await axios.get('https://api.herohrm.com/api/Project/GetProjects', {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
         });
-        setProjects(projectResponse.data.data); // Gelen projeleri kaydet
+        setProjects(projectResponse.data.data);
+
+        // Masraf verilerini çek
+        const expenseResponse = await axios.get('https://api.herohrm.com/api/Expense/GetExpenses', {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+        setExpenses(expenseResponse.data.expenses || []); // expenses array'ini doğru şekilde kaydet
       } catch (error) {
         console.error('API istekleri sırasında hata oluştu:', error);
       }
     };
 
-    fetchUsersCategoriesAndProjects();
-  }, []); // Sayfa yüklendiğinde sadece bir kere çalışacak
+    fetchData();
+  }, []); 
 
-  // Kategori değiştirildiğinde alt kategorileri ayarlamak
   const handleCategoryChange = (e) => {
     const selectedCategoryId = e.target.value;
     setSelectedCategory(selectedCategoryId);
 
-    // Seçilen kategoriye ait alt kategorileri bul
     const selectedCategoryObj = categories.find((category) => category.id === selectedCategoryId);
     if (selectedCategoryObj) {
       setSubCategories(selectedCategoryObj.getSubCategories);
     } else {
       setSubCategories([]);
+    }
+  };
+
+  const getStatusText = (status) => {
+    switch (status) {
+      case 0:
+        return <Badge bg="warning">Beklemede</Badge>;
+      case 1:
+        return <Badge bg="success">Onaylandı</Badge>;
+      case 2:
+        return <Badge bg="danger">Reddedildi</Badge>;
+      default:
+        return <Badge bg="secondary">Bilinmiyor</Badge>;
     }
   };
 
@@ -96,7 +112,6 @@ const MasrafListele = () => {
         <Card.Body>
           <Form>
             <Row>
-              {/* Kullanıcı Adı */}
               <Col md={4}>
                 <Form.Group controlId="formUser">
                   <Form.Label>Kullanıcı Adı</Form.Label>
@@ -114,7 +129,7 @@ const MasrafListele = () => {
                   </Form.Control>
                 </Form.Group>
               </Col>
-              {/* Kategori */}
+
               <Col md={4}>
                 <Form.Group controlId="formCategory">
                   <Form.Label>Masraf Kategori</Form.Label>
@@ -132,7 +147,7 @@ const MasrafListele = () => {
                   </Form.Control>
                 </Form.Group>
               </Col>
-              {/* Alt Kategori */}
+
               <Col md={4}>
                 <Form.Group controlId="formSubCategory">
                   <Form.Label>Alt Masraf Kategori</Form.Label>
@@ -150,7 +165,7 @@ const MasrafListele = () => {
                   </Form.Control>
                 </Form.Group>
               </Col>
-              {/* Masraf Tarihi */}
+
               <Col md={4}>
                 <Form.Group controlId="formDate">
                   <Form.Label>Masraf Tarihi</Form.Label>
@@ -161,7 +176,7 @@ const MasrafListele = () => {
                   </Form.Control>
                 </Form.Group>
               </Col>
-              {/* Onay Durum */}
+
               <Col md={4}>
                 <Form.Group controlId="formStatus">
                   <Form.Label>Onay Durum</Form.Label>
@@ -172,7 +187,7 @@ const MasrafListele = () => {
                   </Form.Control>
                 </Form.Group>
               </Col>
-              {/* Proje */}
+
               <Col md={4}>
                 <Form.Group controlId="formProject">
                   <Form.Label>Proje</Form.Label>
@@ -181,7 +196,7 @@ const MasrafListele = () => {
                     {projects.length > 0 ? (
                       projects.map((project) => (
                         <option key={project.id} value={project.id}>
-                          {project.projectName} {/* Proje adını burada basıyoruz */}
+                          {project.projectName}
                         </option>
                       ))
                     ) : (
@@ -191,128 +206,64 @@ const MasrafListele = () => {
                 </Form.Group>
               </Col>
             </Row>
-            {/* Filtreleme Butonları */}
             <Button className="mt-3" onClick={toggleFilter}>
               {filterVisible ? 'Filtreyi Gizle' : 'Detaylı Filtre'}
             </Button>
             {!filterVisible && (
-              <Button className="mt-3 ms-2" variant="success">Filtrele</Button>
+              <Button className="mt-3 ms-2" variant="success">
+                Filtrele
+              </Button>
             )}
             {filterVisible && (
               <div className="mt-3">
-                <Row>
-                  <Col md={4}>
-                    <Form.Group controlId="formMasrafNo">
-                      <Form.Label>Masraf No</Form.Label>
-                      <Form.Control as="select">
-                        <option>Seçiniz</option>
-                        <option>1</option>
-                        <option>2</option>
-                      </Form.Control>
-                    </Form.Group>
-                  </Col>
-                  <Col md={4}>
-                    <Form.Group controlId="formMinDate">
-                      <Form.Label>Min. Tarih</Form.Label>
-                      <Form.Control type="date" />
-                    </Form.Group>
-                  </Col>
-                  <Col md={4}>
-                    <Form.Group controlId="formMaxDate">
-                      <Form.Label>Maks. Tarih</Form.Label>
-                      <Form.Control type="date" />
-                    </Form.Group>
-                  </Col>
-                  <Col md={4}>
-                    <Form.Group controlId="formMinTotal">
-                      <Form.Label>Min. Toplam Tutar</Form.Label>
-                      <Form.Control type="number" placeholder="Min. Toplam Tutar" />
-                    </Form.Group>
-                  </Col>
-                  <Col md={4}>
-                    <Form.Group controlId="formMaxTotal">
-                      <Form.Label>Maks. Toplam Tutar</Form.Label>
-                      <Form.Control type="number" placeholder="Maks. Toplam Tutar" />
-                    </Form.Group>
-                  </Col>
-                  <Col md={4}>
-                    <Form.Group controlId="formMinKdv">
-                      <Form.Label>Min. KDV Tutarı</Form.Label>
-                      <Form.Control type="number" placeholder="Min. KDV Tutarı" />
-                    </Form.Group>
-                  </Col>
-                  <Col md={4}>
-                    <Form.Group controlId="formMaxKdv">
-                      <Form.Label>Maks. KDV Tutarı</Form.Label>
-                      <Form.Control type="number" placeholder="Maks. KDV Tutarı" />
-                    </Form.Group>
-                  </Col>
-                  <Col md={4}>
-                    <Form.Group controlId="formKdvOrani">
-                      <Form.Label>KDV Oranı</Form.Label>
-                      <Form.Control as="select">
-                        <option>Seçiniz</option>
-                        <option>1</option>
-                        <option>10</option>
-                        <option>20</option>
-                      </Form.Control>
-                    </Form.Group>
-                  </Col>
-                </Row>
-                <Button className="mt-3 ms-2" variant="success">Filtrele</Button>
+                {/* Detaylı filtreleme alanı */}
               </div>
             )}
           </Form>
         </Card.Body>
       </Card>
 
-      {/* Masraf Tablosu */}
       <Card>
         <Card.Body>
           <h4 className="card-title">MASRAF TABLOSU</h4>
           <Table striped bordered hover responsive>
             <thead>
               <tr>
-                <th>Kullanıcı Adı</th>
+                <th>Personel Adı</th>
                 <th>Durum</th>
-                <th>Fiş No</th>
-                <th>Fiş Tarihi</th>
-                <th>Proje</th>
+                <th>Masraf ID</th>
+                <th>Masraf Tarihi</th>
+                <th>Proje Adı</th>
                 <th>Kategori</th>
-                <th>Alt Kategori</th>
-                <th>Satıcı Firma</th>
-                <th>Vergi Numarası</th>
-                <th>Matrah</th>
-                <th>KDV Tutarı</th>
-                <th>KDV Oranı</th>
                 <th>Toplam Tutar</th>
+                <th>KDV Tutarı</th>
                 <th>Detay</th>
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>User 1</td>
-                <td>
-                  <Badge bg="warning">Beklemede</Badge>
-                </td>
-                <td>1</td>
-                <td>12/7/22</td>
-                <td>Proje A</td>
-                <td>Kategori A</td>
-                <td>Alt Kategori A</td>
-                <td>Firma A</td>
-                <td>8594859</td>
-                <td>50 TL</td>
-                <td>10</td>
-                <td>%5</td>
-                <td>60 TL</td>
-                <td>
-                  <NavLink to="/masraf-detaylar" className="btn btn-outline-secondary">
-                    Detay Görüntüle
-                  </NavLink>
-                </td>
-              </tr>
-              {/* Additional rows can go here */}
+              {expenses.length > 0 ? (
+                expenses.map((expense) => (
+                  <tr key={expense.id}>
+                    <td>{expense.fullName}</td>
+                    <td>{getStatusText(expense.status)}</td>
+                    <td>{expense.id}</td>
+                    <td>{new Date(expense.receiptDate).toLocaleDateString()}</td>
+                    <td>{expense.projecName}</td>
+                    <td>{expense.categoryName}</td>
+                    <td>{expense.totalAmount} TL</td>
+                    <td>{expense.taxTotal} TL</td>
+                    <td>
+                      <NavLink to="/masraf-detaylar" className="btn btn-outline-secondary">
+                        Detay Görüntüle
+                      </NavLink>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="9">Veri bulunamadı</td>
+                </tr>
+              )}
             </tbody>
           </Table>
         </Card.Body>
