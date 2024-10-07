@@ -9,6 +9,7 @@ const MasrafEkle = () => {
   ]);
   const [projects, setProjects] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [subCategories, setSubCategories] = useState([]); // Alt kategoriler için state
   const [taxRates, setTaxRates] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
   const [date, setDate] = useState('-');
@@ -108,15 +109,19 @@ const MasrafEkle = () => {
   };
 
   useEffect(() => {
-    // Proje listesini API'den al
     fetchProjects();
-
-    // Kategori listesini API'den al
     fetchCategories();
-
-    // KDV oranlarını API'den al
     fetchTaxRates();
   }, [token]);
+
+  // Kategori seçildiğinde alt kategorileri filtrele
+  const handleCategoryChange = (e) => {
+    const newSelectedCategoryId = e.target.value;
+    setSelectedCategoryId(newSelectedCategoryId);
+
+    const selectedCategory = categories.find(category => category.id === newSelectedCategoryId);
+    setSubCategories(selectedCategory ? selectedCategory.getSubCategories : []);
+  };
 
   const addRow = () => {
     const newRow = {
@@ -138,7 +143,7 @@ const MasrafEkle = () => {
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
-      setSelectedImage(file); // Resim dosyasını kaydediyoruz
+      setSelectedImage(file);
       const currentDate = new Date();
       setDate(currentDate.toLocaleDateString());
       setTime(currentDate.toLocaleTimeString());
@@ -146,7 +151,6 @@ const MasrafEkle = () => {
   };
 
   const handleSave = async () => {
-    // Zorunlu alanların boş olup olmadığını kontrol et
     if (!selectedCategoryId || !selectedProjectId || !vendorName || !receiptNumber || !receiptDate || !taxOffice || !vendorTaxNumber) {
       Swal.fire('Hata', 'Lütfen tüm zorunlu alanları doldurun.', 'error');
       return;
@@ -154,7 +158,7 @@ const MasrafEkle = () => {
 
     const formData = new FormData();
     formData.append('categoryId', selectedCategoryId);
-    formData.append('subCategoryId', selectedSubCategoryId); // SubCategoryId eklendi
+    formData.append('subCategoryId', selectedSubCategoryId);
     formData.append('projectId', selectedProjectId);
     formData.append('vendorCamp', vendorName);
     formData.append('receiptNum', receiptNumber);
@@ -171,9 +175,9 @@ const MasrafEkle = () => {
       formData.append(`ExpenseDetail[${index}].TotalAmount`, row.toplamTutar);
       formData.append(`ExpenseDetail[${index}].TaxAmount`, row.kdvTutar);
       formData.append(`ExpenseDetail[${index}].BaseTotal`, row.matrah);
-      formData.append(`ExpenseDetail[${index}].TaxId`, row.taxId); // Burada TaxId'yi ekledik
+      formData.append(`ExpenseDetail[${index}].TaxId`, row.taxId);
     });
-    console.log(selectedImage)
+
     if (selectedImage) {
       formData.append('ExpenseImage', selectedImage, selectedImage.name);
     } else {
@@ -246,7 +250,7 @@ const MasrafEkle = () => {
                     <tr>
                       <th><Form.Label>Kategori</Form.Label></th>
                       <td>
-                        <Form.Select value={selectedCategoryId} onChange={(e) => setSelectedCategoryId(e.target.value)}>
+                        <Form.Select value={selectedCategoryId} onChange={handleCategoryChange}>
                           <option>Kategori Seçiniz</option>
                           {categories.map(category => (
                             <option key={category.id} value={category.id}>
@@ -257,9 +261,16 @@ const MasrafEkle = () => {
                       </td>
                     </tr>
                     <tr>
-                      <th><Form.Label>Alt Kategori</Form.Label></th> {/* SubCategoryId */}
+                      <th><Form.Label>Alt Kategori</Form.Label></th>
                       <td>
-                        <Form.Control type="text" value={selectedSubCategoryId} onChange={(e) => setSelectedSubCategoryId(e.target.value)} />
+                        <Form.Select value={selectedSubCategoryId} onChange={(e) => setSelectedSubCategoryId(e.target.value)}>
+                          <option>Alt Kategori Seçiniz</option>
+                          {subCategories.map(subCategory => (
+                            <option key={subCategory.id} value={subCategory.id}>
+                              {subCategory.subCategoryName}
+                            </option>
+                          ))}
+                        </Form.Select>
                       </td>
                     </tr>
                     <tr>
@@ -388,10 +399,10 @@ const MasrafEkle = () => {
                         <Form.Select
                           value={row.kdvOrani}
                           onChange={(e) => {
-                            const selectedTax = taxRates.find(rate => rate.taxRate === e.target.value);
+                            const selectedTax = taxRates.find(rate => rate.taxRate === parseFloat(e.target.value));
                             const updatedRows = rows.map((r) =>
                               r.id === row.id
-                                ? { ...r, kdvOrani: e.target.value, taxId: selectedTax?.id } // taxId'yi de burada ekledik
+                                ? { ...r, kdvOrani: e.target.value, taxId: selectedTax ? selectedTax.id : null }
                                 : r
                             );
                             setRows(updatedRows);
@@ -405,6 +416,7 @@ const MasrafEkle = () => {
                           ))}
                         </Form.Select>
                       </td>
+
                       <td>
                         <Form.Control
                           type="text"
