@@ -29,96 +29,92 @@ const MasrafEkle = () => {
 
   const token = Cookies.get('accessToken');
 
-  // Proje listesini API'den al
-  useEffect(() => {
-    const fetchProjects = async () => {
-      if (!token) {
-        console.error("Token bulunamadı");
-        return;
-      }
+  const fetchProjects = async () => {
+    if (!token) {
+      console.error("Token bulunamadı");
+      return;
+    }
 
-      try {
-        const response = await fetch('https://api.herohrm.com/api/Project/GetProjects', {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setProjects(Array.isArray(data.data) ? data.data : []);
-        } else {
-          console.error('Projeleri listeleme başarısız:', response.status, response.statusText);
+    try {
+      const response = await fetch('https://api.herohrm.com/api/Project/GetProjects', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
-      } catch (error) {
-        console.error('API isteği başarısız:', error);
-      }
-    };
+      });
 
+      if (response.ok) {
+        const data = await response.json();
+        setProjects(Array.isArray(data.data) ? data.data : []);
+      } else {
+        console.error('Projeleri listeleme başarısız:', response.status, response.statusText);
+      }
+    } catch (error) {
+      console.error('API isteği başarısız:', error);
+    }
+  };
+
+  const fetchCategories = async () => {
+    if (!token) {
+      console.error("Token bulunamadı");
+      return;
+    }
+
+    try {
+      const response = await fetch('https://api.herohrm.com/api/Category/GetCategories', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setCategories(Array.isArray(data.data) ? data.data : []);
+      } else {
+        console.error('Kategorileri listeleme başarısız:', response.status, response.statusText);
+      }
+    } catch (error) {
+      console.error('API isteği başarısız:', error);
+    }
+  };
+
+  const fetchTaxRates = async () => {
+    if (!token) {
+      console.error("Token bulunamadı");
+      return;
+    }
+
+    try {
+      const response = await fetch('https://api.herohrm.com/api/Tax', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setTaxRates(Array.isArray(data.data) ? data.data : []);
+      } else {
+        console.error('KDV oranlarını listeleme başarısız:', response.status, response.statusText);
+      }
+    } catch (error) {
+      console.error('API isteği başarısız:', error);
+    }
+  };
+
+  useEffect(() => {
+    // Proje listesini API'den al
     fetchProjects();
-  }, [token]);
 
-  // Kategori listesini API'den al
-  useEffect(() => {
-    const fetchCategories = async () => {
-      if (!token) {
-        console.error("Token bulunamadı");
-        return;
-      }
-
-      try {
-        const response = await fetch('https://api.herohrm.com/api/Category/GetCategories', {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setCategories(Array.isArray(data.data) ? data.data : []);
-        } else {
-          console.error('Kategorileri listeleme başarısız:', response.status, response.statusText);
-        }
-      } catch (error) {
-        console.error('API isteği başarısız:', error);
-      }
-    };
-
+    // Kategori listesini API'den al
     fetchCategories();
-  }, [token]);
 
-  // KDV oranlarını API'den al
-  useEffect(() => {
-    const fetchTaxRates = async () => {
-      if (!token) {
-        console.error("Token bulunamadı");
-        return;
-      }
-
-      try {
-        const response = await fetch('https://api.herohrm.com/api/Tax', {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setTaxRates(Array.isArray(data.data) ? data.data : []);
-        } else {
-          console.error('KDV oranlarını listeleme başarısız:', response.status, response.statusText);
-        }
-      } catch (error) {
-        console.error('API isteği başarısız:', error);
-      }
-    };
-
+    // KDV oranlarını API'den al
     fetchTaxRates();
   }, [token]);
 
@@ -162,7 +158,7 @@ const MasrafEkle = () => {
     formData.append('projectId', selectedProjectId);
     formData.append('vendorCamp', vendorName);
     formData.append('receiptNum', receiptNumber);
-    formData.append('receiptDate', new Date(receiptDate).toISOString()); // ISO formatında tarih
+    formData.append('receiptDate', receiptDate);
     formData.append('taxOffice', taxOffice);
     formData.append('vendorTaxNum', vendorTaxNumber);
     formData.append('totalAmount', totalAmount);
@@ -177,9 +173,9 @@ const MasrafEkle = () => {
       formData.append(`ExpenseDetail[${index}].BaseTotal`, row.matrah);
       formData.append(`ExpenseDetail[${index}].TaxId`, row.taxId); // Burada TaxId'yi ekledik
     });
-
+    console.log(selectedImage)
     if (selectedImage) {
-      formData.append('ExpenseImage', selectedImage);
+      formData.append('ExpenseImage', selectedImage, selectedImage.name);
     } else {
       Swal.fire('Hata', 'Lütfen bir resim ekleyin.', 'error');
       return;
