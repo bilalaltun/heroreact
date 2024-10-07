@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Row, Col, Card, Form, Button, Table, Badge } from 'react-bootstrap';
 import HtmlHead from 'components/html-head/HtmlHead';
 import BreadcrumbList from 'components/breadcrumb-list/BreadcrumbList';
 import { NavLink } from 'react-router-dom';
+import axios from 'axios';
 
 const MasrafListele = () => {
   const title = 'Masraf Listele';
@@ -10,9 +11,68 @@ const MasrafListele = () => {
   const breadcrumbs = [{ to: '', text: 'Home' }];
 
   const [filterVisible, setFilterVisible] = useState(false);
+  const [users, setUsers] = useState([]); // Kullanıcıları tutmak için state
+  const [categories, setCategories] = useState([]); // Kategorileri tutmak için state
+  const [selectedCategory, setSelectedCategory] = useState(''); // Seçilen kategori
+  const [subCategories, setSubCategories] = useState([]); // Seçilen kategorinin alt kategorileri
+  const [projects, setProjects] = useState([]); // Projeleri tutmak için state
 
   const toggleFilter = () => {
     setFilterVisible(!filterVisible);
+  };
+
+  // Kullanıcıları, kategorileri ve projeleri API'den çekmek için useEffect
+  useEffect(() => {
+    const fetchUsersCategoriesAndProjects = async () => {
+      try {
+        const accessToken = document.cookie
+          .split('; ')
+          .find((row) => row.startsWith('accessToken='))
+          ?.split('=')[1];
+
+        // Kullanıcıları çek
+        const userResponse = await axios.get('https://api.herohrm.com/api/Admin/GetUsers', {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+        setUsers(userResponse.data.users); // Gelen kullanıcıları kaydet
+
+        // Kategorileri çek
+        const categoryResponse = await axios.get('https://api.herohrm.com/api/Category/GetCategories', {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+        setCategories(categoryResponse.data.data); // Gelen kategorileri kaydet
+
+        // Projeleri çek
+        const projectResponse = await axios.get('https://api.herohrm.com/api/Project/GetProjects', {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+        setProjects(projectResponse.data.data); // Gelen projeleri kaydet
+      } catch (error) {
+        console.error('API istekleri sırasında hata oluştu:', error);
+      }
+    };
+
+    fetchUsersCategoriesAndProjects();
+  }, []); // Sayfa yüklendiğinde sadece bir kere çalışacak
+
+  // Kategori değiştirildiğinde alt kategorileri ayarlamak
+  const handleCategoryChange = (e) => {
+    const selectedCategoryId = e.target.value;
+    setSelectedCategory(selectedCategoryId);
+
+    // Seçilen kategoriye ait alt kategorileri bul
+    const selectedCategoryObj = categories.find((category) => category.id === selectedCategoryId);
+    if (selectedCategoryObj) {
+      setSubCategories(selectedCategoryObj.getSubCategories);
+    } else {
+      setSubCategories([]);
+    }
   };
 
   return (
@@ -36,35 +96,61 @@ const MasrafListele = () => {
         <Card.Body>
           <Form>
             <Row>
+              {/* Kullanıcı Adı */}
               <Col md={4}>
                 <Form.Group controlId="formUser">
                   <Form.Label>Kullanıcı Adı</Form.Label>
                   <Form.Control as="select">
                     <option>Seçiniz</option>
-                    <option>User 1</option>
-                    <option>User 2</option>
+                    {users.length > 0 ? (
+                      users.map((user) => (
+                        <option key={user.id} value={user.id}>
+                          {user.fullName}
+                        </option>
+                      ))
+                    ) : (
+                      <option>Yükleniyor...</option>
+                    )}
                   </Form.Control>
                 </Form.Group>
               </Col>
+              {/* Kategori */}
               <Col md={4}>
                 <Form.Group controlId="formCategory">
                   <Form.Label>Masraf Kategori</Form.Label>
-                  <Form.Control as="select">
+                  <Form.Control as="select" value={selectedCategory} onChange={handleCategoryChange}>
                     <option>Seçiniz</option>
-                    <option>Sağlık</option>
+                    {categories.length > 0 ? (
+                      categories.map((category) => (
+                        <option key={category.id} value={category.id}>
+                          {category.categoryName}
+                        </option>
+                      ))
+                    ) : (
+                      <option>Yükleniyor...</option>
+                    )}
                   </Form.Control>
                 </Form.Group>
               </Col>
+              {/* Alt Kategori */}
               <Col md={4}>
                 <Form.Group controlId="formSubCategory">
                   <Form.Label>Alt Masraf Kategori</Form.Label>
                   <Form.Control as="select">
                     <option>Seçiniz</option>
-                    <option>Gıda</option>
-                    <option>Ulaşım</option>
+                    {subCategories.length > 0 ? (
+                      subCategories.map((subCategory) => (
+                        <option key={subCategory.id} value={subCategory.id}>
+                          {subCategory.subCategoryName}
+                        </option>
+                      ))
+                    ) : (
+                      <option>Alt kategori bulunamadı</option>
+                    )}
                   </Form.Control>
                 </Form.Group>
               </Col>
+              {/* Masraf Tarihi */}
               <Col md={4}>
                 <Form.Group controlId="formDate">
                   <Form.Label>Masraf Tarihi</Form.Label>
@@ -75,6 +161,7 @@ const MasrafListele = () => {
                   </Form.Control>
                 </Form.Group>
               </Col>
+              {/* Onay Durum */}
               <Col md={4}>
                 <Form.Group controlId="formStatus">
                   <Form.Label>Onay Durum</Form.Label>
@@ -85,20 +172,32 @@ const MasrafListele = () => {
                   </Form.Control>
                 </Form.Group>
               </Col>
+              {/* Proje */}
               <Col md={4}>
                 <Form.Group controlId="formProject">
                   <Form.Label>Proje</Form.Label>
                   <Form.Control as="select">
                     <option>Seçiniz</option>
-                    <option>Proje 1</option>
-                    <option>Proje 2</option>
+                    {projects.length > 0 ? (
+                      projects.map((project) => (
+                        <option key={project.id} value={project.id}>
+                          {project.projectName} {/* Proje adını burada basıyoruz */}
+                        </option>
+                      ))
+                    ) : (
+                      <option>Yükleniyor...</option>
+                    )}
                   </Form.Control>
                 </Form.Group>
               </Col>
             </Row>
+            {/* Filtreleme Butonları */}
             <Button className="mt-3" onClick={toggleFilter}>
               {filterVisible ? 'Filtreyi Gizle' : 'Detaylı Filtre'}
             </Button>
+            {!filterVisible && (
+              <Button className="mt-3 ms-2" variant="success">Filtrele</Button>
+            )}
             {filterVisible && (
               <div className="mt-3">
                 <Row>
@@ -160,12 +259,14 @@ const MasrafListele = () => {
                     </Form.Group>
                   </Col>
                 </Row>
+                <Button className="mt-3 ms-2" variant="success">Filtrele</Button>
               </div>
             )}
           </Form>
         </Card.Body>
       </Card>
 
+      {/* Masraf Tablosu */}
       <Card>
         <Card.Body>
           <h4 className="card-title">MASRAF TABLOSU</h4>
