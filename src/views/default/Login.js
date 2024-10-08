@@ -10,6 +10,7 @@ import Swal from 'sweetalert2';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
+
 const removeSwalClasses = () => {
   document.body.classList.remove('swal2-height-auto');
 };
@@ -38,10 +39,23 @@ const Login = () => {
       const { token, fullName, isSucceeded } = response.data;
 
       if (isSucceeded) {
+        // Giriş başarılı olduğunda accessToken ve refreshToken'ı cookie'ye kaydet
         Cookies.set('accessToken', token.accessToken);
         Cookies.set('refreshToken', token.refreshToken);
         Cookies.set('fullName', fullName);
 
+        // accessToken ile GetCurrentCompany isteği yap
+        const companyResponse = await axios.get('https://api.herohrm.com/api/Admin/GetCurrentCompany', {
+          headers: {
+            Authorization: `Bearer ${token.accessToken}`,
+          },
+        });
+
+        // Gelen veriyi companyModel olarak cookie'ye kaydet
+        const companyModel = companyResponse.data.model;
+        Cookies.set('companyModel', JSON.stringify(companyModel));
+
+        // Başarılı olduğunda kullanıcıyı yönlendir
         Swal.fire({
           icon: 'success',
           title: 'Giriş Başarılı',
@@ -73,6 +87,8 @@ const Login = () => {
       });
     }
   };
+
+
 
   const formik = useFormik({ initialValues, validationSchema, onSubmit });
   const { handleSubmit, handleChange, values, touched, errors } = formik;

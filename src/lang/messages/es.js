@@ -1,5 +1,8 @@
 const enMessages = {
   'menu.dashboards': 'es|Dashboards',
+  'Parametreler': 'Parameters',
+  'Sistem Parametreleri': 'System Parameters',
+  'Masraf Raporları': 'Expense Reports',
   'menu.default': 'es|Default',
   'menu.visual': 'es|Visual',
   'menu.analytic': 'es|Analytic',

@@ -11,17 +11,18 @@ const MasrafListele = () => {
   const breadcrumbs = [{ to: '', text: 'Home' }];
 
   const [filterVisible, setFilterVisible] = useState(false);
-  const [users, setUsers] = useState([]); 
-  const [categories, setCategories] = useState([]); 
-  const [selectedCategory, setSelectedCategory] = useState(''); 
-  const [subCategories, setSubCategories] = useState([]); 
-  const [projects, setProjects] = useState([]); 
-  const [expenses, setExpenses] = useState([]); 
+  const [users, setUsers] = useState([]); // Kullanıcıları tutmak için state
+  const [categories, setCategories] = useState([]); // Kategorileri tutmak için state
+  const [selectedCategory, setSelectedCategory] = useState(''); // Seçilen kategori
+  const [subCategories, setSubCategories] = useState([]); // Seçilen kategorinin alt kategorileri
+  const [projects, setProjects] = useState([]); // Projeleri tutmak için state
+  const [expenses, setExpenses] = useState([]); // Masraf verilerini tutmak için state
 
   const toggleFilter = () => {
     setFilterVisible(!filterVisible);
   };
 
+  // Kullanıcıları, kategorileri, projeleri ve masraf verilerini API'den çekmek için useEffect
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -30,26 +31,29 @@ const MasrafListele = () => {
           .find((row) => row.startsWith('accessToken='))
           ?.split('=')[1];
 
+        // Kullanıcıları çek
         const userResponse = await axios.get('https://api.herohrm.com/api/Admin/GetUsers', {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
         });
-        setUsers(userResponse.data.users);
+        setUsers(userResponse.data.users || []);
 
+        // Kategorileri çek
         const categoryResponse = await axios.get('https://api.herohrm.com/api/Category/GetCategories', {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
         });
-        setCategories(categoryResponse.data.data);
+        setCategories(categoryResponse.data.data || []);
 
+        // Projeleri çek
         const projectResponse = await axios.get('https://api.herohrm.com/api/Project/GetProjects', {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
         });
-        setProjects(projectResponse.data.data);
+        setProjects(projectResponse.data.data || []);
 
         // Masraf verilerini çek
         const expenseResponse = await axios.get('https://api.herohrm.com/api/Expense/GetExpenses', {
@@ -57,27 +61,30 @@ const MasrafListele = () => {
             Authorization: `Bearer ${accessToken}`,
           },
         });
-        setExpenses(expenseResponse.data.expenses || []); // expenses array'ini doğru şekilde kaydet
+        setExpenses(expenseResponse.data.data || []); // Masraf verilerini kaydet, boş gelebilir, bu yüzden varsayılan olarak boş array
       } catch (error) {
         console.error('API istekleri sırasında hata oluştu:', error);
       }
     };
 
     fetchData();
-  }, []); 
+  }, []); // Sayfa yüklendiğinde sadece bir kere çalışacak
 
+  // Kategori değiştirildiğinde alt kategorileri ayarlamak
   const handleCategoryChange = (e) => {
     const selectedCategoryId = e.target.value;
     setSelectedCategory(selectedCategoryId);
 
+    // Seçilen kategoriye ait alt kategorileri bul
     const selectedCategoryObj = categories.find((category) => category.id === selectedCategoryId);
     if (selectedCategoryObj) {
-      setSubCategories(selectedCategoryObj.getSubCategories);
+      setSubCategories(selectedCategoryObj.getSubCategories || []);
     } else {
       setSubCategories([]);
     }
   };
 
+  // Durumu anlamlı bir şekilde gösterme fonksiyonu
   const getStatusText = (status) => {
     switch (status) {
       case 0:
@@ -112,6 +119,7 @@ const MasrafListele = () => {
         <Card.Body>
           <Form>
             <Row>
+              {/* Kullanıcı Adı */}
               <Col md={4}>
                 <Form.Group controlId="formUser">
                   <Form.Label>Kullanıcı Adı</Form.Label>
@@ -129,7 +137,7 @@ const MasrafListele = () => {
                   </Form.Control>
                 </Form.Group>
               </Col>
-
+              {/* Kategori */}
               <Col md={4}>
                 <Form.Group controlId="formCategory">
                   <Form.Label>Masraf Kategori</Form.Label>
@@ -147,7 +155,7 @@ const MasrafListele = () => {
                   </Form.Control>
                 </Form.Group>
               </Col>
-
+              {/* Alt Kategori */}
               <Col md={4}>
                 <Form.Group controlId="formSubCategory">
                   <Form.Label>Alt Masraf Kategori</Form.Label>
@@ -165,7 +173,7 @@ const MasrafListele = () => {
                   </Form.Control>
                 </Form.Group>
               </Col>
-
+              {/* Masraf Tarihi */}
               <Col md={4}>
                 <Form.Group controlId="formDate">
                   <Form.Label>Masraf Tarihi</Form.Label>
@@ -176,7 +184,7 @@ const MasrafListele = () => {
                   </Form.Control>
                 </Form.Group>
               </Col>
-
+              {/* Onay Durum */}
               <Col md={4}>
                 <Form.Group controlId="formStatus">
                   <Form.Label>Onay Durum</Form.Label>
@@ -187,7 +195,7 @@ const MasrafListele = () => {
                   </Form.Control>
                 </Form.Group>
               </Col>
-
+              {/* Proje */}
               <Col md={4}>
                 <Form.Group controlId="formProject">
                   <Form.Label>Proje</Form.Label>
@@ -223,6 +231,7 @@ const MasrafListele = () => {
         </Card.Body>
       </Card>
 
+      {/* Masraf Tablosu */}
       <Card>
         <Card.Body>
           <h4 className="card-title">MASRAF TABLOSU</h4>
@@ -248,12 +257,12 @@ const MasrafListele = () => {
                     <td>{getStatusText(expense.status)}</td>
                     <td>{expense.id}</td>
                     <td>{new Date(expense.receiptDate).toLocaleDateString()}</td>
-                    <td>{expense.projecName}</td>
+                    <td>{expense.projectName}</td>
                     <td>{expense.categoryName}</td>
                     <td>{expense.totalAmount} TL</td>
                     <td>{expense.taxTotal} TL</td>
                     <td>
-                      <NavLink to="/masraf-detaylar" className="btn btn-outline-secondary">
+                      <NavLink to={`/masraf-detaylar/${expense.id}`} className="btn btn-outline-secondary">
                         Detay Görüntüle
                       </NavLink>
                     </td>

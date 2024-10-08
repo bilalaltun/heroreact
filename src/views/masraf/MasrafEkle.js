@@ -9,26 +9,32 @@ const MasrafEkle = () => {
   ]);
   const [projects, setProjects] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [subCategories, setSubCategories] = useState([]); // Alt kategoriler için state
+  const [subCategories, setSubCategories] = useState([]);
   const [taxRates, setTaxRates] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
   const [date, setDate] = useState('-');
   const [time, setTime] = useState('-');
 
   const [selectedCategoryId, setSelectedCategoryId] = useState('');
-  const [selectedSubCategoryId, setSelectedSubCategoryId] = useState(''); // Yeni SubCategoryId
+  const [selectedSubCategoryId, setSelectedSubCategoryId] = useState('');
   const [selectedProjectId, setSelectedProjectId] = useState('');
   const [vendorName, setVendorName] = useState('');
   const [receiptNumber, setReceiptNumber] = useState('');
   const [receiptDate, setReceiptDate] = useState('');
   const [taxOffice, setTaxOffice] = useState('');
   const [vendorTaxNumber, setVendorTaxNumber] = useState('');
-  const [totalAmount, setTotalAmount] = useState('');
+  const [totalAmount, setTotalAmount] = useState('');  
   const [taxTotal, setTaxTotal] = useState('');
   const [baseTotal, setBaseTotal] = useState('');
   const [commentText, setCommentText] = useState('');
 
   const token = Cookies.get('accessToken');
+
+  useEffect(() => {
+    const currentDate = new Date();
+    setDate(currentDate.toLocaleDateString());
+    setTime(currentDate.toLocaleTimeString());
+  }, []);
 
   const fetchProjects = async () => {
     if (!token) {
@@ -47,7 +53,7 @@ const MasrafEkle = () => {
 
       if (response.ok) {
         const data = await response.json();
-        setProjects(Array.isArray(data.data) ? data.data : []);
+        setProjects(data ? data.model.data : []);
       } else {
         console.error('Projeleri listeleme başarısız:', response.status, response.statusText);
       }
@@ -73,7 +79,7 @@ const MasrafEkle = () => {
 
       if (response.ok) {
         const data = await response.json();
-        setCategories(Array.isArray(data.data) ? data.data : []);
+        setCategories(data ? data.model : []);
       } else {
         console.error('Kategorileri listeleme başarısız:', response.status, response.statusText);
       }
@@ -99,7 +105,7 @@ const MasrafEkle = () => {
 
       if (response.ok) {
         const data = await response.json();
-        setTaxRates(Array.isArray(data.data) ? data.data : []);
+        setTaxRates(data ? data.model : []);
       } else {
         console.error('KDV oranlarını listeleme başarısız:', response.status, response.statusText);
       }
@@ -114,7 +120,6 @@ const MasrafEkle = () => {
     fetchTaxRates();
   }, [token]);
 
-  // Kategori seçildiğinde alt kategorileri filtrele
   const handleCategoryChange = (e) => {
     const newSelectedCategoryId = e.target.value;
     setSelectedCategoryId(newSelectedCategoryId);
@@ -144,9 +149,6 @@ const MasrafEkle = () => {
     const file = event.target.files[0];
     if (file) {
       setSelectedImage(file);
-      const currentDate = new Date();
-      setDate(currentDate.toLocaleDateString());
-      setTime(currentDate.toLocaleTimeString());
     }
   };
 
@@ -165,16 +167,17 @@ const MasrafEkle = () => {
     formData.append('receiptDate', receiptDate);
     formData.append('taxOffice', taxOffice);
     formData.append('vendorTaxNum', vendorTaxNumber);
-    formData.append('totalAmount', totalAmount);
-    formData.append('taxTotal', taxTotal);
-    formData.append('baseTotal', baseTotal);
+
+    formData.append('totalAmount', parseInt(totalAmount, 10));
+    formData.append('taxTotal', parseInt(taxTotal, 10));
+    formData.append('baseTotal', parseInt(baseTotal, 10));
     formData.append('comment', commentText);
 
     rows.forEach((row, index) => {
       formData.append(`ExpenseDetail[${index}].ProductName`, row.urunAdi);
-      formData.append(`ExpenseDetail[${index}].TotalAmount`, row.toplamTutar);
-      formData.append(`ExpenseDetail[${index}].TaxAmount`, row.kdvTutar);
-      formData.append(`ExpenseDetail[${index}].BaseTotal`, row.matrah);
+      formData.append(`ExpenseDetail[${index}].TotalAmount`, parseInt(row.toplamTutar, 10));
+      formData.append(`ExpenseDetail[${index}].TaxAmount`, parseInt(row.kdvTutar, 10));
+      formData.append(`ExpenseDetail[${index}].BaseTotal`, parseInt(row.matrah, 10));
       formData.append(`ExpenseDetail[${index}].TaxId`, row.taxId);
     });
 
@@ -195,7 +198,9 @@ const MasrafEkle = () => {
       });
 
       if (response.ok) {
-        Swal.fire('Başarılı!', 'Masraf başarıyla kaydedildi.', 'success');
+        Swal.fire('Başarılı!', 'Masraf başarıyla kaydedildi.', 'success').then(() => {
+          window.location.reload(); 
+        });
       } else {
         const errorData = await response.json();
         Swal.fire('Hata', `Masraf kaydedilemedi: ${errorData.message}`, 'error');
@@ -207,6 +212,58 @@ const MasrafEkle = () => {
   };
 
   const fullName = Cookies.get('fullName') || 'Kullanıcı';
+
+  const handleNumberInput = (e) => {
+    const value = e.target.value.replace(/\D/g, ''); 
+    setReceiptNumber(value);
+  };
+
+  const handleTaxNumberInput = (e) => {
+    const value = e.target.value.replace(/\D/g, '').slice(0, 10); 
+    setVendorTaxNumber(value);
+  };
+
+  const handleTextInput = (e) => {
+    const value = e.target.value.replace(/[^a-zA-ZğüşöçİĞÜŞÖÇ\s]/g, '');
+    setTaxOffice(value);
+  };
+
+  const calculateTotals = () => {
+    let totalKdv = 0;
+    let totalMatrah = 0;
+
+    rows.forEach((row) => {
+      const kdvOrani = parseFloat(row.kdvOrani) || 0;
+      const toplamTutar = parseFloat(row.toplamTutar) || 0;
+      const kdvTutar = (toplamTutar * kdvOrani) / (100 + kdvOrani);
+      const matrah = toplamTutar - kdvTutar;
+
+      row.kdvTutar = kdvTutar.toFixed(2);
+      row.matrah = matrah.toFixed(2);
+
+      totalKdv += kdvTutar;
+      totalMatrah += matrah;
+    });
+
+    setTaxTotal(totalKdv.toFixed(2));
+    setBaseTotal(totalMatrah.toFixed(2));
+  };
+
+  const calculateTotalAmount = () => {
+    const total = rows.reduce((acc, row) => {
+      const toplamTutar = parseFloat(row.toplamTutar) || 0;
+      return acc + toplamTutar;
+    }, 0);
+    setTotalAmount(total.toFixed(2)); 
+  };
+
+  useEffect(() => {
+    calculateTotalAmount(); 
+  }, [rows]);
+
+  useEffect(() => {
+    calculateTotals(); 
+  }, [rows]);
 
   return (
     <div className="container-fluid">
@@ -223,12 +280,8 @@ const MasrafEkle = () => {
                       <td><Form.Control type="text" value={fullName} readOnly /></td>
                     </tr>
                     <tr>
-                      <th><Form.Label>Masraf No</Form.Label></th>
-                      <td><Form.Control type="text" value="2024/1" readOnly /></td>
-                    </tr>
-                    <tr>
                       <th><Form.Label>Fiş No</Form.Label></th>
-                      <td><Form.Control type="text" value={receiptNumber} onChange={(e) => setReceiptNumber(e.target.value)} /></td>
+                      <td><Form.Control type="text" value={receiptNumber} onChange={handleNumberInput} /></td>
                     </tr>
                     <tr>
                       <th><Form.Label>Fiş Tarihi</Form.Label></th>
@@ -279,23 +332,23 @@ const MasrafEkle = () => {
                     </tr>
                     <tr>
                       <th><Form.Label>Vergi Dairesi</Form.Label></th>
-                      <td><Form.Control type="text" value={taxOffice} onChange={(e) => setTaxOffice(e.target.value)} /></td>
+                      <td><Form.Control type="text" value={taxOffice} onChange={handleTextInput} /></td>
                     </tr>
                     <tr>
                       <th><Form.Label>Vergi Numarası</Form.Label></th>
-                      <td><Form.Control type="text" value={vendorTaxNumber} onChange={(e) => setVendorTaxNumber(e.target.value)} /></td>
+                      <td><Form.Control type="text" value={vendorTaxNumber} onChange={handleTaxNumberInput} /></td>
                     </tr>
                     <tr>
                       <th><Form.Label>Toplam Tutar</Form.Label></th>
-                      <td><Form.Control type="number" value={totalAmount} onChange={(e) => setTotalAmount(e.target.value)} /></td>
+                      <td><Form.Control type="number" value={totalAmount} readOnly /></td>
                     </tr>
                     <tr>
                       <th><Form.Label>KDV Tutarı</Form.Label></th>
-                      <td><Form.Control type="text" value={taxTotal} onChange={(e) => setTaxTotal(e.target.value)} /></td>
+                      <td><Form.Control type="text" value={taxTotal} readOnly /></td>
                     </tr>
                     <tr>
                       <th><Form.Label>Matrah</Form.Label></th>
-                      <td><Form.Control type="text" value={baseTotal} onChange={(e) => setBaseTotal(e.target.value)} /></td>
+                      <td><Form.Control type="text" value={baseTotal} readOnly /></td>
                     </tr>
                     <tr>
                       <th><Form.Label>Açıklama</Form.Label></th>
@@ -421,24 +474,14 @@ const MasrafEkle = () => {
                         <Form.Control
                           type="text"
                           value={row.kdvTutar}
-                          onChange={(e) => {
-                            const updatedRows = rows.map((r) =>
-                              r.id === row.id ? { ...r, kdvTutar: e.target.value } : r
-                            );
-                            setRows(updatedRows);
-                          }}
+                          readOnly
                         />
                       </td>
                       <td>
                         <Form.Control
                           type="text"
                           value={row.matrah}
-                          onChange={(e) => {
-                            const updatedRows = rows.map((r) =>
-                              r.id === row.id ? { ...r, matrah: e.target.value } : r
-                            );
-                            setRows(updatedRows);
-                          }}
+                          readOnly
                         />
                       </td>
                       <td>

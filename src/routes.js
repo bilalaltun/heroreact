@@ -25,6 +25,9 @@ const masraf = {
 const rapor = {
   rapor: lazy(() => import('views/rapor/Rapor')),
 };
+const parametre = {
+  parametre: lazy(() => import('views/parametre/Parametreler')),
+};
 const pages = {
   index: lazy(() => import('views/pages/Pages')),
   authentication: {
@@ -204,6 +207,16 @@ const routesAndMenuItems = {
       subs: [
         { path: '/masrafekle', label: 'Masraf Ekle', component: masraf.masrafekle },
         { path: '/masraflistele', label: 'Masraf Listele', component: masraf.masraflistele },
+      ],
+    },
+    {
+      path: `${appRoot}/parametre`,
+      label: 'Parametreler',
+      icon: 'screen',
+      icon: 'home-garage',
+      component: masraf.index,
+      subs: [
+        { path: '/parametreler', label: 'Sistem Parametreleri', component: parametre.parametreler },
       ],
     },
     {
