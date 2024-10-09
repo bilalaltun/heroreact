@@ -12,7 +12,7 @@ const trMessages = {
   'menu.apps': 'Uygulamalar',
   'menu.calendar': 'Takvim',
   'menu.chat': 'Sohbet',
-  'menu.contacts': 'Kişiler',
+  'menu.contacts': 'Kullanıcılar',
   'menu.mailbox': 'Posta Kutusu',
   'menu.tasks': 'Görevler',
   'menu.pages': 'Sayfalar',

@@ -32,6 +32,7 @@
     "intro.js": "^4.2.2",
     "intro.js-react": "^0.5.0",
     "js-cookie": "^3.0.5",
+    "jwt-decode": "^4.0.0",
     "luxon": "^2.0.1",
     "overlayscrollbars": "^1.13.1",
     "overlayscrollbars-react": "^0.2.3",

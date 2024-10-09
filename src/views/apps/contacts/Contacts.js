@@ -1,191 +1,215 @@
-import React, { useEffect, useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { Row, Col, Form } from 'react-bootstrap';
-import { useTable, useGlobalFilter, useSortBy, usePagination, useRowSelect, useRowState, useAsyncDebounce } from 'react-table';
-import HtmlHead from 'components/html-head/HtmlHead';
-import BreadcrumbList from 'components/breadcrumb-list/BreadcrumbList';
-import { createContact, deleteContact, getContacts, updateContact } from './contactsSlice';
-import ItemList from './components/ItemList';
-import ItemListPagination from './components/ItemListPagination';
-import AddEditModal from './components/AddEditModal';
-import ItemListHeader from './components/ItemListHeader';
-import CheckAll from './components/CheckAll';
-import SearchInput from './components/SearchInput';
-import AddNewButton from './components/AddNewButton';
-import MobileSortDropdown from './components/MobileSortDropdown';
-import DeleteConfirmModal from './components/DeleteConfirmModal';
+import React, { useState, useEffect } from 'react';
+import { Row, Col, Card, Form, Button, Table } from 'react-bootstrap';
+import Swal from 'sweetalert2';
 
-const ContactsApp = () => {
-  const title = 'Kullanicilar';
-  const description = 'Sistem içerisindeki aktif kullanıcılar listesi.';
+const Contacts = () => {
+  const [userData, setUserData] = useState({
+    userName: '',
+    fullName: '',
+    email: '',
+    password: '',
+    passwordConfirm: ''
+  });
 
-  const breadcrumbs = [
-    { to: '', text: 'Anasayfa' },
-    { to: 'apps', title: 'Uygulamalar' },
-  ];
+  const [users, setUsers] = useState([]);
+  const accessToken = document.cookie
+    .split('; ')
+    .find((row) => row.startsWith('accessToken='))
+    ?.split('=')[1];
 
-  const columns = React.useMemo(() => {
-    return [
-      {
-        Header: 'Isim',
-        accessor: 'name',
-        sortable: true,
-        headerClassName: 'ol-3 col-lg-4 d-flex flex-column mb-lg-0 pe-3 d-flex',
-        Cell: ({ cell }) => {
-          return (
-            <a
-              className="list-item-heading body"
-              href="#!"
-              onClick={(e) => {
-                e.preventDefault();
-              }}
-            >
-              {cell.value}
-            </a>
-          );
-        },
-      },
-      {
-        Header: 'Email',
-        accessor: 'email',
-        sortable: true,
-        headerClassName: 'col-3 col-lg-3 d-flex flex-column pe-1 justify-content-center',
-      },
-      {
-        Header: 'Telefon',
-        accessor: 'phone',
-        sortable: true,
-        headerClassName: 'col-3 col-lg-3 d-flex flex-column pe-1 justify-content-center',
-      },
-      {
-        Header: 'Tanım',
-        accessor: 'group',
-        sortable: true,
-        headerClassName: 'col-3 col-lg-1 d-flex flex-column pe-1 justify-content-center',
-      },
-      {
-        Header: '',
-        id: 'action',
-        headerClassName: '',
-        Cell: ({ row }) => {
-          const { checked, onChange } = row.getToggleRowSelectedProps();
-          return <Form.Check className="form-check float-end mt-1" type="checkbox" checked={checked} onChange={onChange} />;
-        },
-      },
-    ];
-  }, []);
-
-  const dispatch = useDispatch();
-  const { contacts: data, pageCount, loading } = useSelector((state) => state.contacts);
-
-  const [isOpenAddEditModal, setIsOpenAddEditModal] = useState(false);
-  const [isOpenDeleteConfirmModal, setIsOpenDeleteConfirmModal] = useState(false);
-  const [term, setTerm] = useState('');
-
-  const tableInstance = useTable(
-    {
-      columns,
-      data,
-      isOpenAddEditModal,
-      setIsOpenAddEditModal,
-      isOpenDeleteConfirmModal,
-      setIsOpenDeleteConfirmModal,
-      manualPagination: true,
-      manualFilters: true,
-      manualSortBy: true,
-      autoResetPage: false,
-      autoResetSortBy: false,
-      pageCount,
-      initialState: { pageSize: 8, pageIndex: 0, sortBy: [{ id: 'name', desc: false }], hiddenColumns: ['id'] },
-    },
-    useGlobalFilter,
-    useSortBy,
-    usePagination,
-    useRowSelect,
-    useRowState
-  );
-  const {
-    state: { pageIndex, pageSize, sortBy },
-  } = tableInstance;
-
-  const addItem = ({ item }) => {
-    dispatch(createContact({ sortBy, pageSize, pageIndex, item }));
-  };
-
-  const editItem = ({ item }) => {
-    dispatch(updateContact({ sortBy, pageSize, pageIndex, item }));
-  };
-
-  const deleteItem = (items) => {
-    dispatch(deleteContact({ sortBy, pageSize, pageIndex, ids: items.map((x) => x.id) }));
-  };
-
-  const searchItem = useAsyncDebounce((val) => {
-    setTerm(val || undefined);
-  }, 200);
-
+  // Kullanıcı listesini getir - GetUsers API İsteği
   useEffect(() => {
-    if (loading) {
-      document.body.classList.add('spinner');
-    } else {
-      document.body.classList.remove('spinner');
-    }
-    return () => {
-      document.body.classList.remove('spinner');
+    const getUsers = async () => {
+      try {
+        const response = await fetch('https://api.herohrm.com/api/Admin/GetUsers', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+
+        const data = await response.json();
+        if (data.users) {
+          setUsers(data.users);
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'Hata',
+            text: 'Kullanıcılar alınırken bir hata oluştu.',
+          });
+        }
+      } catch (error) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Hata',
+          text: 'Kullanıcılar alınırken bir hata oluştu.',
+        });
+      }
     };
-  }, [loading]);
-  useEffect(() => {
+
+    getUsers();
+  }, [accessToken]);
+
+  // Kullanıcı Kaydet - CreateUser API İsteği
+  const handleAddUser = async () => {
+    const bodyData = {
+      userName: userData.userName,
+      fullName: userData.fullName,
+      email: userData.email,
+      password: userData.password,
+      passwordConfirm: userData.passwordConfirm
+    };
+
     try {
-      dispatch(getContacts({ term, sortBy, pageSize, pageIndex }));
-    } catch (e) {
-      // console.log('...error : ', e);
+      const response = await fetch('https://api.herohrm.com/api/Admin/CreateUser', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify(bodyData)
+      });
+
+      const result = await response.json();
+
+      if (result.isSucceeded) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Başarılı',
+          text: 'Kullanıcı başarıyla eklendi.',
+        }).then(() => {
+          window.location.reload(); // Sayfa yenileme
+        });
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Hata',
+          text: result.message,
+        });
+      }
+    } catch (error) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Hata',
+        text: 'Kullanıcı eklenirken bir hata oluştu.',
+      });
     }
-  }, [sortBy, dispatch, pageIndex, pageSize, term]);
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setUserData((prevData) => ({
+      ...prevData,
+      [name]: value
+    }));
+  };
 
   return (
-    <>
-      <HtmlHead title={title} description={description} />
-      <div className="container" id="contacts">
-        {/* Title and Top Buttons Start */}
-        <div className="page-title-container">
-          <Row className="g-0">
-            <Col xs="auto" className="mb-2 mb-md-0 me-auto">
-              <div className="w-auto sw-md-30">
-                <h1 className="mb-0 pb-0 display-4">{title} </h1>
-                <BreadcrumbList items={breadcrumbs} />
-              </div>
+    <div className="container mt-4">
+      {/* Kullanıcı Ekleme Formu */}
+      <Card>
+        <Card.Body>
+          <h4>Kullanıcı Ekleme Formu</h4>
+          <Row className="align-items-center">
+            <Col md={6}>
+              <Form.Label>Kullanıcı Adı</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Kullanıcı Adı Giriniz"
+                name="userName"
+                value={userData.userName}
+                onChange={handleInputChange}
+              />
             </Col>
-            <div className="w-100 d-md-none" />
-            <Col xs="12" sm="6" md="auto" className="d-flex align-items-start justify-content-end order-3 order-sm-2">
-              <div className="w-100 w-lg-auto search-input-container border border-separator">
-                <SearchInput tableInstance={tableInstance} onChange={searchItem} />
-              </div>
-            </Col>
-            <Col xs="12" sm="6" md="auto" className="d-flex align-items-start justify-content-end mb-2 mb-sm-0 order-sm-3">
-              <AddNewButton tableInstance={tableInstance} />
-              <MobileSortDropdown tableInstance={tableInstance} />
-              <CheckAll tableInstance={tableInstance} />
+
+            <Col md={6}>
+              <Form.Label>Ad Soyad</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Ad Soyad Giriniz"
+                name="fullName"
+                value={userData.fullName}
+                onChange={handleInputChange}
+              />
             </Col>
           </Row>
-        </div>
-        {/* Title and Top Buttons End */}
 
-        <Row className="g-0">
-          <Col>
-            {/* List Items Start */}
-            <div id="checkboxTable">
-              <ItemListHeader tableInstance={tableInstance} />
-              <ItemList tableInstance={tableInstance} />
-              <ItemListPagination tableInstance={tableInstance} />
-            </div>
-          </Col>
+          <Row className="align-items-center mt-3">
+            <Col md={6}>
+              <Form.Label>Email</Form.Label>
+              <Form.Control
+                type="email"
+                placeholder="Email Giriniz"
+                name="email"
+                value={userData.email}
+                onChange={handleInputChange}
+              />
+            </Col>
 
-          {isOpenAddEditModal && <AddEditModal tableInstance={tableInstance} addItem={addItem} editItem={editItem} />}
-          {isOpenDeleteConfirmModal && <DeleteConfirmModal tableInstance={tableInstance} deleteItem={deleteItem} />}
-        </Row>
-      </div>
-    </>
+            <Col md={6}>
+              <Form.Label>Şifre</Form.Label>
+              <Form.Control
+                type="password"
+                placeholder="Şifre Giriniz"
+                name="password"
+                value={userData.password}
+                onChange={handleInputChange}
+              />
+            </Col>
+          </Row>
+
+          <Row className="align-items-center mt-3">
+            <Col md={6}>
+              <Form.Label>Şifre Tekrar</Form.Label>
+              <Form.Control
+                type="password"
+                placeholder="Şifre Tekrar Giriniz"
+                name="passwordConfirm"
+                value={userData.passwordConfirm}
+                onChange={handleInputChange}
+              />
+            </Col>
+          </Row>
+
+          <Button className="btn-primary w-100 mt-4" onClick={handleAddUser}>
+            Kullanıcı Kaydet
+          </Button>
+        </Card.Body>
+      </Card>
+
+      {/* Kullanıcılar Listesi Tablosu */}
+      <Card className="mt-4">
+        <Card.Body>
+          <h4>Kullanıcılar Listesi</h4>
+          <Table striped bordered hover>
+            <thead>
+              <tr>
+                <th>Kullanıcı ID</th>
+                <th>Ad Soyad</th>
+              </tr>
+            </thead>
+            <tbody>
+              {users.length > 0 ? (
+                users.map((user) => (
+                  <tr key={user.id}>
+                    <td>{user.id}</td>
+                    <td>{user.fullName}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="2" className="text-center">
+                    Kullanıcı bulunamadı.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </Table>
+        </Card.Body>
+      </Card>
+    </div>
   );
 };
 
-export default ContactsApp;
+export default Contacts;

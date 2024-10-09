@@ -2,6 +2,8 @@
 import { lazy } from 'react';
 import { USER_ROLE } from 'constants.js';
 import { DEFAULT_PATHS } from 'config.js';
+import { projectLength } from 'chartist';
+import Kdv from 'views/parametre/Kdv';
 
 const dashboards = {
   index: lazy(() => import('views/dashboards/Dashboards')),
@@ -16,6 +18,7 @@ const apps = {
   contacts: lazy(() => import('views/apps/contacts/Contacts')),
   mailbox: lazy(() => import('views/apps/mailbox/Mailbox')),
   tasks: lazy(() => import('views/apps/tasks/Tasks')),
+  company: lazy(() => import('views/apps/company/SirketEkle')),
 };
 const masraf = {
   index: lazy(() => import('views/masraf/Masraf')),
@@ -26,7 +29,10 @@ const rapor = {
   rapor: lazy(() => import('views/rapor/Rapor')),
 };
 const parametre = {
-  parametre: lazy(() => import('views/parametre/Parametreler')),
+  parametreler: lazy(() => import('views/parametre/Parametreler')),
+  proje: lazy(() => import('views/parametre/Proje')),
+  kategoriler: lazy(() => import('views/parametre/Kategoriler')),
+  kdv: lazy(() => import('views/parametre/Kdv')),
 };
 const pages = {
   index: lazy(() => import('views/pages/Pages')),
@@ -57,7 +63,7 @@ const pages = {
   },
   portfolio: {
     index: lazy(() => import('views/pages/portfolio/Portfolio')),
-    home:  lazy(() => import('views/pages/portfolio/PortfolioHome')),
+    home: lazy(() => import('views/pages/portfolio/PortfolioHome')),
     detail: lazy(() => import('views/pages/portfolio/PortfolioDetail')),
   },
   profile: {
@@ -160,7 +166,7 @@ const interfaces = {
     typography: lazy(() => import('views/interface/content/Typography')),
     menu: {
       index: lazy(() => import('views/interface/content/menu/Menu')),
-      horizontal:  lazy(() => import('views/interface/content/menu/Horizontal')),
+      horizontal: lazy(() => import('views/interface/content/menu/Horizontal')),
       vertical: lazy(() => import('views/interface/content/menu/Vertical')),
       verticalHidden: lazy(() => import('views/interface/content/menu/VerticalHidden')),
       verticalNoHidden: lazy(() => import('views/interface/content/menu/VerticalNoHidden')),
@@ -178,30 +184,28 @@ const routesAndMenuItems = {
       path: DEFAULT_PATHS.APP,
       exact: true,
       redirect: true,
-      //to: `${appRoot}/dashboards/analytic`,
-      to: `${appRoot}/login`,
+      to: `${appRoot}/login`, // Düzeltilmiş
     },
     {
-      path: `${appRoot}/dashboards/analytic`,
+      path: `${appRoot}/dashboards/analytic`, // Düzeltilmiş
       component: dashboards.analytic,
       label: 'Dashboard',
       icon: 'home',
     },
     {
-      path: `${appRoot}/apps`,
+      path: `${appRoot}/apps`, // Düzeltilmiş
       label: 'Uygulamalar',
       icon: 'screen',
       component: apps.index,
       subs: [
         { path: '/calendar', label: 'menu.calendar', component: apps.calendar },
         { path: '/contacts', label: 'menu.contacts', component: apps.contacts },
-
+        { path: '/company', label: 'Şirket Ekle', component: apps.company },
       ],
     },
     {
-      path: `${appRoot}/masraf`,
+      path: `${appRoot}/masraf`, // Düzeltilmiş
       label: 'Masraflar',
-      icon: 'screen',
       icon: 'home-garage',
       component: masraf.index,
       subs: [
@@ -210,21 +214,23 @@ const routesAndMenuItems = {
       ],
     },
     {
-      path: `${appRoot}/parametre`,
+      path: `${appRoot}/parametre`, // Düzeltilmiş
       label: 'Parametreler',
-      icon: 'screen',
       icon: 'home-garage',
-      component: masraf.index,
+      component: parametre.parametreler,
       subs: [
         { path: '/parametreler', label: 'Sistem Parametreleri', component: parametre.parametreler },
+        { path: '/proje', label: 'Projeler', component: parametre.proje },
+        { path: '/kategoriler', label: 'Kategoriler', component: parametre.kategoriler },
+        { path: '/kdv', label: 'KDV Oranları', component: parametre.kdv },
       ],
     },
     {
-      path: `${appRoot}/dashboards`,
+      path: `${appRoot}/dashboards`, // Düzeltilmiş
       component: dashboards.index,
       label: 'Rapor',
       icon: 'home',
-       subs: [
+      subs: [
         { path: '/default', label: 'Masraf Raporları', component: dashboards.default },
       ],
     },
