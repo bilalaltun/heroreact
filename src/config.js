@@ -38,7 +38,7 @@ export const DEFAULT_SETTINGS = {
 
 export const DEFAULT_USER = {
   id: 1,
-  name: fullName || 'Super Admin', // Eğer çerezdeki isim yoksa, 'Super Admin' olarak ayarlanır
+  name: fullName || 'fullName', // Eğer çerezdeki isim yoksa, 'Super Admin' olarak ayarlanır
   thumb: '/img/profile/profile-3.webp',
   role: USER_ROLE.Admin,
   email: 'admin@herohrm.com',
