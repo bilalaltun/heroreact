@@ -23,8 +23,8 @@ export const DEFAULT_PATHS = {
   INVALID_ACCESS: '/invalid-access',
 };
 
-// Çerezden fullName değerini al
-const fullName = Cookies.get('fullName');
+// Çerezden fullName değerini al ve varsayılan değeri ayarla
+const fullName = Cookies.get('fullName') || 'Super Admin'; // Eğer çerezde 'fullName' yoksa varsayılan olarak 'Super Admin'
 
 export const DEFAULT_SETTINGS = {
   MENU_PLACEMENT: MENU_PLACEMENT.Horizontal,
@@ -38,7 +38,7 @@ export const DEFAULT_SETTINGS = {
 
 export const DEFAULT_USER = {
   id: 1,
-  name: fullName || 'fullName', // Eğer çerezdeki isim yoksa, 'Super Admin' olarak ayarlanır
+  name: fullName, // Çerezdeki fullName kullanılır, yoksa 'Super Admin' kullanılır
   thumb: '/img/profile/profile-3.webp',
   role: USER_ROLE.Admin,
   email: 'admin@herohrm.com',

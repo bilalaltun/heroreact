@@ -35,26 +35,27 @@ const Login = () => {
           'accept': '*/*',
         },
       });
-
-      const { token, fullName, isSucceeded } = response.data;
-
+  
+      const { token, fullName, isSucceeded, role } = response.data; // role değeri burada çekiliyor
+  
       if (isSucceeded) {
         // Giriş başarılı olduğunda accessToken ve refreshToken'ı cookie'ye kaydet
         Cookies.set('accessToken', token.accessToken);
         Cookies.set('refreshToken', token.refreshToken);
         Cookies.set('fullName', fullName);
-
+        Cookies.set('role', role); // Role değeri cookie'ye ekleniyor
+  
         // accessToken ile GetCurrentCompany isteği yap
         const companyResponse = await axios.get('https://api.herohrm.com/api/Admin/GetCurrentCompany', {
           headers: {
             Authorization: `Bearer ${token.accessToken}`,
           },
         });
-
+  
         // Gelen veriyi companyModel olarak cookie'ye kaydet
         const companyModel = companyResponse.data.model;
         Cookies.set('companyModel', JSON.stringify(companyModel));
-
+  
         // Başarılı olduğunda kullanıcıyı yönlendir
         Swal.fire({
           icon: 'success',

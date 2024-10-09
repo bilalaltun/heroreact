@@ -1,31 +1,28 @@
 import React, { useState, useEffect } from 'react';
-import { Row, Col, Card, Form, Button, Table, Badge, Spinner, Pagination } from 'react-bootstrap';
+import { Row, Col, Card, Form, Button, Table, Badge, Pagination } from 'react-bootstrap';
 import HtmlHead from 'components/html-head/HtmlHead';
 import BreadcrumbList from 'components/breadcrumb-list/BreadcrumbList';
-import { NavLink } from 'react-router-dom';
 import axios from 'axios';
+import { useHistory, Route } from 'react-router-dom';
+import MasrafDetay from 'views/masraf/MasrafDetay';
 
 const MasrafListele = () => {
   const title = 'Masraf Listele';
   const description = 'Masraf listeleme ve detay görüntüleme ekranı.';
   const breadcrumbs = [{ to: '', text: 'Home' }];
 
-  const [filterVisible, setFilterVisible] = useState(false);
-  const [users, setUsers] = useState([]); // Kullanıcıları tutmak için state
-  const [categories, setCategories] = useState([]); // Kategorileri tutmak için state
-  const [selectedCategory, setSelectedCategory] = useState(''); // Seçilen kategori
-  const [subCategories, setSubCategories] = useState([]); // Seçilen kategorinin alt kategorileri
-  const [projects, setProjects] = useState([]); // Projeleri tutmak için state
-  const [expenses, setExpenses] = useState([]); // Masraf verilerini tutmak için state
-  const [loading, setLoading] = useState(false); // Loader durumu
-  const [currentPage, setCurrentPage] = useState(1); // Mevcut sayfa numarası
-  const [totalPages, setTotalPages] = useState(1); // Toplam sayfa sayısı
+  const [user, setUser] = useState(null);
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [subCategories, setSubCategories] = useState([]);
+  const [projects, setProjects] = useState([]);
+  const [expenses, setExpenses] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const history = useHistory();
+  const [role, setRole] = useState(''); // Yeni eklenen state
 
-  const toggleFilter = () => {
-    setFilterVisible(!filterVisible);
-  };
-
-  // Kullanıcıları, kategorileri, projeleri ve masraf verilerini API'den çekmek için useEffect
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -34,43 +31,66 @@ const MasrafListele = () => {
           .find((row) => row.startsWith('accessToken='))
           ?.split('=')[1];
 
-        // Kullanıcıları çek
-        const userResponse = await axios.get('https://api.herohrm.com/api/Admin/GetUsers', {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        });
-        setUsers(userResponse.data.users || []);
+        const roleFromCookie = document.cookie
+          .split('; ')
+          .find((row) => row.startsWith('role='))
+          ?.split('=')[1];
 
-        // Kategorileri çek
+        const fullName = document.cookie
+          .split('; ')
+          .find((row) => row.startsWith('fullName='))
+          ?.split('=')[1];
+
+        const userId = document.cookie
+          .split('; ')
+          .find((row) => row.startsWith('userId='))
+          ?.split('=')[1];
+
+        setRole(roleFromCookie); // role değişkenini güncelliyoruz
+
+        if (!accessToken) {
+          console.error('Access Token bulunamadı!');
+          return;
+        }
+
+        // role bilgisi SuperAdmin veya Admin ise GetUsers çağrısı yap
+        if (roleFromCookie === 'SuperAdmin' || roleFromCookie === 'Admin') {
+          const userResponse = await axios.get('https://api.herohrm.com/api/Admin/GetUsers', {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          });
+          setUser(userResponse.data.users || []);
+        } else {
+          // role User ise sadece cookie'deki bilgiyi kullan
+          setUser({ fullName, id: userId });
+        }
+
         const categoryResponse = await axios.get('https://api.herohrm.com/api/Category/GetCategories', {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
         });
-        setCategories(categoryResponse.data.model || []); // 'model' içindeki veriyi aldık.
+        setCategories(categoryResponse.data.model || []);
 
-        // Projeleri çek
         const projectResponse = await axios.get('https://api.herohrm.com/api/Project/GetProjects', {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
         });
-        setProjects(projectResponse.data.model.data || []); // 'model.data' içindeki veriyi aldık.
+        setProjects(projectResponse.data.model.data || []);
       } catch (error) {
         console.error('API istekleri sırasında hata oluştu:', error);
       }
     };
 
     fetchData();
-  }, []); // Sayfa yüklendiğinde sadece bir kere çalışacak
+  }, []);
 
-  // Kategori değiştirildiğinde alt kategorileri ayarlamak
   const handleCategoryChange = (e) => {
     const selectedCategoryId = e.target.value;
     setSelectedCategory(selectedCategoryId);
 
-    // Seçilen kategoriye ait alt kategorileri bul
     const selectedCategoryObj = categories.find((category) => category.id === selectedCategoryId);
     if (selectedCategoryObj) {
       setSubCategories(selectedCategoryObj.getSubCategories || []);
@@ -79,54 +99,28 @@ const MasrafListele = () => {
     }
   };
 
-  // Filtreleme işlemi yapıldığında
   const handleFilter = async (page = 1) => {
-    setLoading(true); // Loader başlat
+    setLoading(true);
     try {
       const accessToken = document.cookie
         .split('; ')
         .find((row) => row.startsWith('accessToken='))
         ?.split('=')[1];
 
-      // Formdan seçilen değerleri alalım
-      const selectedUserId = document.getElementById('formUser').value;
-      const selectedProjectId = document.getElementById('formProject').value;
       const approvalStatus = document.getElementById('formStatus').value;
       const minExpenseDate = document.getElementById('formMinExpenseDate').value;
       const maxExpenseDate = document.getElementById('formMaxExpenseDate').value;
 
-      // Dinamik olarak doldurulmuş parametreleri oluşturuyoruz
       const params = {};
+      if (user?.id) params.UserId = user.id;
+      if (selectedCategory) params.CategoryId = selectedCategory;
+      if (approvalStatus) params.ApprovalStatus = approvalStatus === 'true';
+      if (minExpenseDate) params.MinExpenseDate = minExpenseDate;
+      if (maxExpenseDate) params.MaxExpenseDate = maxExpenseDate;
 
-      if (selectedUserId) {
-        params.UserId = selectedUserId;
-      }
-
-      if (selectedCategory) {
-        params.CategoryId = selectedCategory;
-      }
-
-      if (selectedProjectId) {
-        params.ProjectId = selectedProjectId;
-      }
-
-      if (approvalStatus) {
-        params.ApprovalStatus = approvalStatus === "true"; // Onaylandı true olarak gönderilecek
-      }
-
-      if (minExpenseDate) {
-        params.MinExpenseDate = minExpenseDate;
-      }
-
-      if (maxExpenseDate) {
-        params.MaxExpenseDate = maxExpenseDate;
-      }
-
-      // Sayfa numarası ve boyut gibi sabit parametreleri ekleyelim
       params.CurrentPage = page;
       params.PageSize = 5;
 
-      // API isteğini yapalım
       const response = await axios.get('https://api.herohrm.com/api/Expense/GetExpenses', {
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -134,21 +128,23 @@ const MasrafListele = () => {
         params,
       });
 
-      setExpenses(response.data.expenses || []); // Gelen masraf verilerini state'e kaydet
-      setTotalPages(response.data.paging.totolPageCount || 1); // Toplam sayfa sayısını ayarla
-      setCurrentPage(page); // Mevcut sayfa numarasını güncelle
+      setExpenses(response.data.expenses || []);
+      setTotalPages(response.data.paging.totolPageCount || 1);
+      setCurrentPage(page);
     } catch (error) {
       console.error('Filtreleme sırasında hata oluştu:', error);
     }
-    setLoading(false); // Loader durdur
+    setLoading(false);
   };
 
-  // Sayfalama işlevi
+  const handleViewDetails = (expenseId) => {
+    history.push(`/masraf/masrafdetay/${expenseId}`);
+  };
+
   const handlePageChange = (pageNumber) => {
-    handleFilter(pageNumber); // Filtreleme fonksiyonuna sayfa numarasını geçir
+    handleFilter(pageNumber);
   };
 
-  // Durumu anlamlı bir şekilde gösterme fonksiyonu
   const getStatusText = (status) => {
     switch (status) {
       case 0:
@@ -179,102 +175,101 @@ const MasrafListele = () => {
         </Col>
       </Row>
 
+      {/* Filtreleme Alanı */}
       <Card className="mb-4">
         <Card.Body>
           <Form>
             <Row>
-              {/* Kullanıcı Adı */}
               <Col md={4}>
                 <Form.Group controlId="formUser">
                   <Form.Label>Kullanıcı Adı</Form.Label>
-                  <Form.Control as="select">
-                    <option>Seçiniz</option>
-                    {users.length > 0 ? (
-                      users.map((user) => (
-                        <option key={user.id} value={user.id}>
-                          {user.fullName}
-                        </option>
-                      ))
+                  <Form.Control as="select" disabled={user?.id}>
+                    {role === 'SuperAdmin' || role === 'Admin' ? (
+                      <>
+                        <option>Seçiniz</option>
+                        {user && user.length > 0 // user null veya undefined olup olmadığını kontrol ediyoruz
+                          ? user.map((userItem) => (  // 'userItem' olarak değiştirildi
+                            <option key={userItem.id} value={userItem.id}>
+                              {userItem.fullName}
+                            </option>
+                          ))
+                          : <option>Kullanıcı bulunamadı</option>}
+                      </>
                     ) : (
-                      <option>Yükleniyor...</option>
+                      <option value={user?.id}>{user?.fullName}</option>
                     )}
                   </Form.Control>
+
                 </Form.Group>
               </Col>
-              {/* Kategori */}
+
               <Col md={4}>
                 <Form.Group controlId="formCategory">
                   <Form.Label>Masraf Kategori</Form.Label>
                   <Form.Control as="select" value={selectedCategory} onChange={handleCategoryChange}>
                     <option>Seçiniz</option>
-                    {categories.length > 0 ? (
-                      categories.map((category) => (
+                    {categories.length > 0
+                      ? categories.map((category) => (
                         <option key={category.id} value={category.id}>
                           {category.categoryName}
                         </option>
                       ))
-                    ) : (
-                      <option>Yükleniyor...</option>
-                    )}
+                      : <option>Yükleniyor...</option>}
                   </Form.Control>
                 </Form.Group>
               </Col>
-              {/* Proje */}
+
               <Col md={4}>
                 <Form.Group controlId="formProject">
                   <Form.Label>Proje</Form.Label>
                   <Form.Control as="select">
                     <option>Seçiniz</option>
-                    {projects.length > 0 ? (
-                      projects.map((project) => (
+                    {projects.length > 0
+                      ? projects.map((project) => (
                         <option key={project.id} value={project.id}>
                           {project.projectName}
                         </option>
                       ))
-                    ) : (
-                      <option>Yükleniyor...</option>
-                    )}
+                      : <option>Yükleniyor...</option>}
                   </Form.Control>
                 </Form.Group>
               </Col>
             </Row>
+
             <Row>
-              {/* Alt Kategori */}
               <Col md={3}>
                 <Form.Group controlId="formSubCategory">
                   <Form.Label>Alt Masraf Kategori</Form.Label>
                   <Form.Control as="select">
                     <option>Seçiniz</option>
-                    {subCategories.length > 0 ? (
-                      subCategories.map((subCategory) => (
+                    {subCategories.length > 0
+                      ? subCategories.map((subCategory) => (
                         <option key={subCategory.id} value={subCategory.id}>
                           {subCategory.subCategoryName}
                         </option>
                       ))
-                    ) : (
-                      <option>Alt kategori bulunamadı</option>
-                    )}
+                      : <option>Alt kategori bulunamadı</option>}
                   </Form.Control>
                 </Form.Group>
               </Col>
-              {/* Başlangıç Tarihi */}
+
               <Col md={3}>
                 <Form.Group controlId="formMinExpenseDate">
                   <Form.Label>Başlangıç Tarihi</Form.Label>
                   <Form.Control type="date" />
                 </Form.Group>
               </Col>
-              {/* Bitiş Tarihi */}
+
               <Col md={3}>
                 <Form.Group controlId="formMaxExpenseDate">
                   <Form.Label>Bitiş Tarihi</Form.Label>
                   <Form.Control type="date" />
                 </Form.Group>
               </Col>
-              {/* Onay Durum */}
+
               <Col md={3}>
                 <Form.Group controlId="formStatus">
-                  <Form.Label>Onay Durum</Form.Label>
+                  <Form.Label>Onay Durumu</Form.Label>
                   <Form.Control as="select">
                     <option value="">Seçiniz</option>
                     <option value="true">Onaylandı</option>
@@ -283,14 +278,10 @@ const MasrafListele = () => {
                 </Form.Group>
               </Col>
             </Row>
-            <Button className="mt-3" onClick={toggleFilter}>
-              {filterVisible ? 'Filtreyi Gizle' : 'Detaylı Filtre'}
+
+            <Button className="mt-3" variant="primary" onClick={() => handleFilter(1)}>
+              Filtrele
             </Button>
-            {!filterVisible && (
-              <Button className="mt-3 ms-2" variant="success" onClick={() => handleFilter(1)}>
-                {loading ? <Spinner animation="border" size="sm" /> : 'Filtrele'}
-              </Button>
-            )}
           </Form>
         </Card.Body>
       </Card>
@@ -316,21 +307,23 @@ const MasrafListele = () => {
             <tbody>
               {expenses.length > 0 ? (
                 expenses.map((expense) => (
-                  <tr key={expense.id}>
-                    <td>{expense.fullName}</td>
-                    <td>{getStatusText(expense.status)}</td>
-                    <td>{expense.id}</td>
-                    <td>{new Date(expense.receiptDate).toLocaleDateString()}</td>
-                    <td>{expense.projecName}</td>
-                    <td>{expense.categoryName}</td>
-                    <td>{expense.totalAmount} TL</td>
-                    <td>{expense.taxTotal} TL</td>
-                    <td>
-                      <NavLink to={`/masraf-detaylar/${expense.id}`} className="btn btn-outline-secondary">
-                        Detay Görüntüle
-                      </NavLink>
-                    </td>
-                  </tr>
+                  expense.id ? (
+                    <tr key={expense.id}>
+                      <td>{expense.fullName}</td>
+                      <td>{getStatusText(expense.status)}</td>
+                      <td>{expense.id}</td>
+                      <td>{new Date(expense.receiptDate).toLocaleDateString()}</td>
+                      <td>{expense.projectName}</td>
+                      <td>{expense.categoryName}</td>
+                      <td>{expense.totalAmount} TL</td>
+                      <td>{expense.taxTotal} TL</td>
+                      <td>
+                        <Button onClick={() => handleViewDetails(expense.id)} className="btn btn-outline-secondary">
+                          Detay Görüntüle
+                        </Button>
+                      </td>
+                    </tr>
+                  ) : null
                 ))
               ) : (
                 <tr>
@@ -357,5 +350,7 @@ const MasrafListele = () => {
     </>
   );
 };
+
+<Route path="/masraf/masrafdetay/:expenseId" component={MasrafDetay} />
 
 export default MasrafListele;

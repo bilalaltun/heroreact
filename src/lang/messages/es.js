@@ -1,7 +1,12 @@
 const enMessages = {
   'menu.dashboards': 'es|Dashboards',
+  'Şirket Ekle': 'Add Company',
+  'Masraf Detay': 'Expense Details',
   'Parametreler': 'Parameters',
   'Sistem Parametreleri': 'System Parameters',
+  'Projeler': 'Projects',
+  'Kategoriler': 'Categories',
+  'KDV Oranları': 'VAT Rates',
   'Masraf Raporları': 'Expense Reports',
   'menu.default': 'es|Default',
   'menu.visual': 'es|Visual',
