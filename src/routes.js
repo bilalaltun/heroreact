@@ -102,18 +102,19 @@ const routesAndMenuItems = {
           { path: '/masrafdetay', label: 'Masraf Detay', component: masraf.masrafdetay, hidden: false }, // Herkese görünür olacak şekilde ayarlandı
         ],
       },      
-    role !== 'Admin' && {
-      path: `${appRoot}/parametre`,
-      label: 'Parametreler',
-      icon: 'home-garage',
-      component: parametre.parametreler,
-      subs: [
-        { path: '/parametreler', label: 'Sistem Parametreleri', component: parametre.parametreler },
-        { path: '/proje', label: 'Projeler', component: parametre.proje },
-        { path: '/kategoriler', label: 'Kategoriler', component: parametre.kategoriler },
-        { path: '/kdv', label: 'KDV Oranları', component: parametre.kdv },
-      ],
-    },
+      (role === 'Admin' || role === 'SuperAdmin') && {
+        path: `${appRoot}/parametre`,
+        label: 'Parametreler',
+        icon: 'home-garage',
+        component: parametre.parametreler,
+        subs: [
+          { path: '/parametreler', label: 'Sistem Parametreleri', component: parametre.parametreler },
+          { path: '/proje', label: 'Projeler', component: parametre.proje },
+          { path: '/kategoriler', label: 'Kategoriler', component: parametre.kategoriler },
+          { path: '/kdv', label: 'KDV Oranları', component: parametre.kdv },
+        ],
+      },
+      
     {
       path: `${appRoot}/dashboards`,
       component: dashboards.index,
