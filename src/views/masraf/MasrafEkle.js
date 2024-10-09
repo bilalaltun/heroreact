@@ -369,7 +369,7 @@ const MasrafEkle = () => {
                   id="preview-image"
                   className="img-fluid"
                   alt=""
-                  src={selectedImage ? URL.createObjectURL(selectedImage) : '/assets/images/fisekleyiniz.jpeg'}
+                  src={selectedImage ? URL.createObjectURL(selectedImage) : '/img/fisekleyiniz.jpeg'}
                   style={{ height: '100%', maxHeight: '90px' }}
                 />
                 <input
