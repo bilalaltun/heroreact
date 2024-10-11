@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Row, Col, Form, Button, Card, Table } from 'react-bootstrap';
+import { Row, Col, Form, Button, Card, Table, Spinner } from 'react-bootstrap';
 import Swal from 'sweetalert2';
 import Cookies from 'js-cookie';
 
@@ -27,6 +27,7 @@ const MasrafEkle = () => {
   const [taxTotal, setTaxTotal] = useState('');
   const [baseTotal, setBaseTotal] = useState('');
   const [commentText, setCommentText] = useState('');
+  const [isLoading, setIsLoading] = useState(false); // Yeni loading state'i eklendi
 
   const token = Cookies.get('accessToken');
 
@@ -152,7 +153,13 @@ const MasrafEkle = () => {
     }
   };
 
-  // "Analiz Et" butonu için fonksiyon
+  // Gelen tarih formatını "DD.MM.YYYY" -> "YYYY-MM-DD" şekline dönüştüren bir fonksiyon
+  const formatDateForInput = (dateString) => {
+    const [day, month, year] = dateString.split('.'); // Gelen tarihi parçala
+    return `${year}-${month}-${day}`; // YYYY-MM-DD formatına çevir
+  };
+
+  // "Analiz Et" butonuna basıldıktan sonra API'den gelen response'u işleme
   const handleAnalyze = async () => {
     if (!selectedImage) {
         Swal.fire('Hata', 'Lütfen bir resim yükleyin.', 'error');
@@ -177,17 +184,23 @@ const MasrafEkle = () => {
             setTaxOffice(data.taxOffice || '');
             setVendorTaxNumber(data.vendorTaxNum || '');
             setReceiptNumber(data.receiptNum || '');
-            setReceiptDate(data.receiptDate || '');
+            setReceiptDate(formatDateForInput(data.receiptDate || ''));
 
-            const updatedRows = data.expenseDetailsDto.map((detail, index) => ({
-                id: index + 1,
-                urunAdi: detail.productName || '',
-                toplamTutar: detail.totalAmount || '',
-                kdvOrani: detail.taxRate || '',
-                kdvTutar: detail.taxAmount || '',
-                matrah: detail.baseTotal || '',
-                selected: false
-            }));
+            // Gelen datalarda TaxId kontrolü yapıyoruz
+            const updatedRows = data.expenseDetailsDto.map((detail, index) => {
+                const selectedTax = taxRates.find(rate => rate.taxRate === parseFloat(detail.taxRate));
+                
+                return {
+                    id: index + 1,
+                    urunAdi: detail.productName || '',
+                    toplamTutar: detail.totalAmount || '',
+                    kdvOrani: detail.taxRate || '',
+                    kdvTutar: detail.taxAmount || '',
+                    matrah: detail.baseTotal || '',
+                    taxId: selectedTax ? selectedTax.id : null, // TaxId kontrolü
+                    selected: false
+                };
+            });
 
             setRows(updatedRows);
         } else {
@@ -201,11 +214,13 @@ const MasrafEkle = () => {
 
 
   const handleSave = async () => {
+    let valid = true; // Flag
+  
     if (!selectedCategoryId || !selectedProjectId || !vendorName || !receiptNumber || !receiptDate || !taxOffice || !vendorTaxNumber) {
       Swal.fire('Hata', 'Lütfen tüm zorunlu alanları doldurun.', 'error');
       return;
     }
-
+  
     const formData = new FormData();
     formData.append('categoryId', selectedCategoryId);
     formData.append('subCategoryId', selectedSubCategoryId);
@@ -215,27 +230,34 @@ const MasrafEkle = () => {
     formData.append('receiptDate', receiptDate);
     formData.append('taxOffice', taxOffice);
     formData.append('vendorTaxNum', vendorTaxNumber);
-
+  
     formData.append('totalAmount', parseInt(totalAmount, 10));
     formData.append('taxTotal', parseInt(taxTotal, 10));
     formData.append('baseTotal', parseInt(baseTotal, 10));
     formData.append('comment', commentText);
-
+  
     rows.forEach((row, index) => {
-      formData.append(`ExpenseDetail[${index}].ProductName`, row.urunAdi);
-      formData.append(`ExpenseDetail[${index}].TotalAmount`, parseInt(row.toplamTutar, 10));
-      formData.append(`ExpenseDetail[${index}].TaxAmount`, parseInt(row.kdvTutar, 10));
-      formData.append(`ExpenseDetail[${index}].BaseTotal`, parseInt(row.matrah, 10));
-      formData.append(`ExpenseDetail[${index}].TaxId`, row.taxId);
+      if (row.taxId) {
+        formData.append(`ExpenseDetail[${index}].ProductName`, row.urunAdi);
+        formData.append(`ExpenseDetail[${index}].TotalAmount`, parseInt(row.toplamTutar, 10));
+        formData.append(`ExpenseDetail[${index}].TaxAmount`, parseInt(row.kdvTutar, 10));
+        formData.append(`ExpenseDetail[${index}].BaseTotal`, parseInt(row.matrah, 10));
+        formData.append(`ExpenseDetail[${index}].TaxId`, row.taxId);
+      } else {
+        Swal.fire('Hata', `Satır ${index + 1} için geçerli bir KDV oranı ve TaxId seçin.`, 'error');
+        valid = false; // Hatalıysa işlemi durdur
+      }
     });
-
+  
+    if (!valid) return; // Eğer valid değilse işlem devam etmesin
+  
     if (selectedImage) {
       formData.append('ExpenseImage', selectedImage, selectedImage.name);
     } else {
       Swal.fire('Hata', 'Lütfen bir resim ekleyin.', 'error');
       return;
     }
-
+  
     try {
       const response = await fetch('https://api.herohrm.com/api/Expense/AddExpense', {
         method: 'POST',
@@ -244,7 +266,7 @@ const MasrafEkle = () => {
         },
         body: formData,
       });
-
+  
       if (response.ok) {
         Swal.fire('Başarılı!', 'Masraf başarıyla kaydedildi.', 'success').then(() => {
           window.location.reload();
@@ -258,6 +280,7 @@ const MasrafEkle = () => {
       Swal.fire('Hata', 'Masraf kaydedilemedi', 'error');
     }
   };
+  
 
   const fullName = Cookies.get('fullName') || 'Kullanıcı';
 
@@ -430,8 +453,8 @@ const MasrafEkle = () => {
                 <Button variant="secondary" onClick={() => document.getElementById('image-upload').click()}>
                   Resim Yükle
                 </Button>
-                <Button variant="warning" onClick={handleAnalyze}>
-                  Analiz Et
+                <Button variant="warning" onClick={handleAnalyze} disabled={isLoading}>
+                  {isLoading ? <Spinner animation="border" size="sm" /> : 'Analiz Et'} {/* Loader eklendi */}
                 </Button>
               </div>
               <div>
@@ -500,7 +523,7 @@ const MasrafEkle = () => {
                               );
                               setRows(updatedRows);
                             }
-                          }}                          
+                          }}
                         />
                       </td>
                       <td>
@@ -510,7 +533,7 @@ const MasrafEkle = () => {
                             const selectedTax = taxRates.find(rate => rate.taxRate === parseFloat(e.target.value));
                             const updatedRows = rows.map((r) =>
                               r.id === row.id
-                                ? { ...r, kdvOrani: e.target.value, taxId: selectedTax ? selectedTax.id : null }
+                                ? { ...r, kdvOrani: e.target.value, taxId: selectedTax ? selectedTax.id : null } // TaxId ataması yapılıyor
                                 : r
                             );
                             setRows(updatedRows);
@@ -524,7 +547,6 @@ const MasrafEkle = () => {
                           ))}
                         </Form.Select>
                       </td>
-
                       <td>
                         <Form.Control
                           type="text"
