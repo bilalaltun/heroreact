@@ -1,6 +1,7 @@
 /* eslint-disable */
 import { lazy } from 'react';
 import { DEFAULT_PATHS } from 'config.js';
+import { jwtDecode } from 'jwt-decode';
 
 // Cookie'den role değerini almak için bir yardımcı fonksiyon ekliyoruz.
 const getRoleFromCookie = () => {

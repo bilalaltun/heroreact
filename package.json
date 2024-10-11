@@ -15,6 +15,7 @@
     "@testing-library/jest-dom": "^5.13.0",
     "@testing-library/react": "^11.2.7",
     "@testing-library/user-event": "^13.1.9",
+    "alertifyjs": "^1.14.0",
     "autosuggest-trie": "^2.1.1",
     "axios": "^0.21.1",
     "axios-mock-adapter": "^1.19.0",

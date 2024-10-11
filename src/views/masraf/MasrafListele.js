@@ -318,7 +318,10 @@ const MasrafListele = () => {
                       <td>{expense.totalAmount} TL</td>
                       <td>{expense.taxTotal} TL</td>
                       <td>
-                        <Button onClick={() => handleViewDetails(expense.id)} className="btn btn-outline-secondary">
+                        <Button
+                          onClick={() => handleViewDetails(expense.id)}
+                          className="btn btn-outline-secondary text-white"
+                        >
                           Detay Görüntüle
                         </Button>
                       </td>

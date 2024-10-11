@@ -10,18 +10,37 @@ import { useHistory } from 'react-router-dom'; // Yönlendirme için useHistory 
 const NavUserMenuContent = () => {
   const history = useHistory(); // Yönlendirme için useHistory hook'u
 
-  const handleLogout = () => {
-    // Tüm çerezleri silme
-    document.cookie.split(";").forEach((c) => {
-      const cookieName = c.split("=")[0].trim();
-      
-      // Çerezi silerken path ve domain belirtmek gerekli olabilir.
-      document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=localhost;`;
+  const deleteAllCookies = () => {
+    // Mevcut tüm çerezleri al
+    const cookies = document.cookie.split(";");
+  
+    cookies.forEach((cookie) => {
+      const cookieName = cookie.split("=")[0].trim();
+  
+      // Tüm olası domain'ler ve path'ler için çerezleri silmek için farklı yollar deneyelim.
+      const domains = [
+        window.location.hostname, // Dinamik domain
+        'localhost' // Test ortamı için
+      ];
+  
+      domains.forEach(domain => {
+        // Ana domain ve alt domainler için çerez silme işlemi
+        document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${domain};`;
+        document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.${domain};`; // Subdomain'ler için
+      });
+  
+      // Alt yollar için çerezleri sil
+      document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+      document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/subpath;`;
     });
-
-    // Kullanıcıyı login sayfasına yönlendirme
-    history.push('/login'); // login.js sayfasına yönlendirme
   };
+  
+  // Logout işlemi sırasında bu fonksiyonu çağır
+  const handleLogout = () => {
+    deleteAllCookies(); // Tüm çerezleri silme
+    history.push('/login'); // Kullanıcıyı login sayfasına yönlendirme
+  };
+  
 
   return (
     <div>

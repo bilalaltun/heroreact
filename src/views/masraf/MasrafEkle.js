@@ -23,7 +23,7 @@ const MasrafEkle = () => {
   const [receiptDate, setReceiptDate] = useState('');
   const [taxOffice, setTaxOffice] = useState('');
   const [vendorTaxNumber, setVendorTaxNumber] = useState('');
-  const [totalAmount, setTotalAmount] = useState('');  
+  const [totalAmount, setTotalAmount] = useState('');
   const [taxTotal, setTaxTotal] = useState('');
   const [baseTotal, setBaseTotal] = useState('');
   const [commentText, setCommentText] = useState('');
@@ -152,6 +152,54 @@ const MasrafEkle = () => {
     }
   };
 
+  // "Analiz Et" butonu için fonksiyon
+  const handleAnalyze = async () => {
+    if (!selectedImage) {
+        Swal.fire('Hata', 'Lütfen bir resim yükleyin.', 'error');
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('photos', selectedImage); // 'photos' ismi burada önemli çünkü API bu ismi bekliyor.
+
+    try {
+        const response = await fetch('https://api.herohrm.com/api/ReceiptAnalyze/analyze', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
+            body: formData,
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            setVendorName(data.vendorCamp || '');
+            setTaxOffice(data.taxOffice || '');
+            setVendorTaxNumber(data.vendorTaxNum || '');
+            setReceiptNumber(data.receiptNum || '');
+            setReceiptDate(data.receiptDate || '');
+
+            const updatedRows = data.expenseDetailsDto.map((detail, index) => ({
+                id: index + 1,
+                urunAdi: detail.productName || '',
+                toplamTutar: detail.totalAmount || '',
+                kdvOrani: detail.taxRate || '',
+                kdvTutar: detail.taxAmount || '',
+                matrah: detail.baseTotal || '',
+                selected: false
+            }));
+
+            setRows(updatedRows);
+        } else {
+            Swal.fire('Hata', 'Resim analizi başarısız.', 'error');
+        }
+    } catch (error) {
+        console.error('API isteği başarısız:', error);
+        Swal.fire('Hata', 'Resim analizi sırasında bir hata oluştu.', 'error');
+    }
+};
+
+
   const handleSave = async () => {
     if (!selectedCategoryId || !selectedProjectId || !vendorName || !receiptNumber || !receiptDate || !taxOffice || !vendorTaxNumber) {
       Swal.fire('Hata', 'Lütfen tüm zorunlu alanları doldurun.', 'error');
@@ -199,7 +247,7 @@ const MasrafEkle = () => {
 
       if (response.ok) {
         Swal.fire('Başarılı!', 'Masraf başarıyla kaydedildi.', 'success').then(() => {
-          window.location.reload(); 
+          window.location.reload();
         });
       } else {
         const errorData = await response.json();
@@ -214,12 +262,12 @@ const MasrafEkle = () => {
   const fullName = Cookies.get('fullName') || 'Kullanıcı';
 
   const handleNumberInput = (e) => {
-    const value = e.target.value.replace(/\D/g, ''); 
+    const value = e.target.value.replace(/\D/g, '');
     setReceiptNumber(value);
   };
 
   const handleTaxNumberInput = (e) => {
-    const value = e.target.value.replace(/\D/g, '').slice(0, 10); 
+    const value = e.target.value.replace(/\D/g, '').slice(0, 11);
     setVendorTaxNumber(value);
   };
 
@@ -254,15 +302,15 @@ const MasrafEkle = () => {
       const toplamTutar = parseFloat(row.toplamTutar) || 0;
       return acc + toplamTutar;
     }, 0);
-    setTotalAmount(total.toFixed(2)); 
+    setTotalAmount(total.toFixed(2));
   };
 
   useEffect(() => {
-    calculateTotalAmount(); 
+    calculateTotalAmount();
   }, [rows]);
 
   useEffect(() => {
-    calculateTotals(); 
+    calculateTotals();
   }, [rows]);
 
   return (
@@ -382,6 +430,9 @@ const MasrafEkle = () => {
                 <Button variant="secondary" onClick={() => document.getElementById('image-upload').click()}>
                   Resim Yükle
                 </Button>
+                <Button variant="warning" onClick={handleAnalyze}>
+                  Analiz Et
+                </Button>
               </div>
               <div>
                 <span id="upload-date">Kayıt Tarihi: {date}</span><br />
@@ -441,11 +492,15 @@ const MasrafEkle = () => {
                           type="text"
                           value={row.toplamTutar}
                           onChange={(e) => {
-                            const updatedRows = rows.map((r) =>
-                              r.id === row.id ? { ...r, toplamTutar: e.target.value } : r
-                            );
-                            setRows(updatedRows);
-                          }}
+                            const { value } = e.target;
+                            // Sadece rakamlara izin veriyoruz
+                            if (/^\d*$/.test(value)) {
+                              const updatedRows = rows.map((r) =>
+                                r.id === row.id ? { ...r, toplamTutar: value } : r
+                              );
+                              setRows(updatedRows);
+                            }
+                          }}                          
                         />
                       </td>
                       <td>
